@@ -1,7 +1,9 @@
 services:
-  django:
+  devthoughts:
     build: .
-    contrainer_name: app
+    contrainer_name: devthoughts
+    command: /usr/src/app/start.sh
+
     volumes:
       - ./:user/src/app
     ports:
@@ -9,7 +11,7 @@ services:
     depends_on:
       - pgdb
     env_file:
-      - .env
+      - example.env
   
   pgdb:
     image: postgres
@@ -17,7 +19,7 @@ services:
     volumes:
       - db_data:/var/lib/postgresql/db_data
     env_file:
-      - .env
+      - example.env
 
 volumes:
   db_data
