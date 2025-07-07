@@ -1,11 +1,10 @@
 services:
   devthoughts:
     build: .
-    contrainer_name: devthoughts
-    command: /usr/src/app/start.sh
+    command: /usr/src/app/run.sh
 
     volumes:
-      - ./:user/src/app
+      - ./:/user/src/app
     ports:
       - 8000:8000
     depends_on:
@@ -22,4 +21,4 @@ services:
       - example.env
 
 volumes:
-  db_data
+  db_data:
