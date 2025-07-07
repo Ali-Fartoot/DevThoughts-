@@ -1,0 +1,23 @@
+services:
+  django:
+    build: .
+    contrainer_name: app
+    volumes:
+      - ./:user/src/app
+    ports:
+      - 8000:8000
+    depends_on:
+      - pgdb
+    env_file:
+      - .env
+  
+  pgdb:
+    image: postgres
+    container_name: pgdb
+    volumes:
+      - db_data:/var/lib/postgresql/db_data
+    env_file:
+      - .env
+
+volumes:
+  db_data
