@@ -4,6 +4,7 @@ WORKDIR /usr/src/app
 COPY . /usr/src/app/
 COPY requirements.txt ./
 RUN pip install --no-cache-dir -r requirements.txt
-COPY run.sh /run.sh
-RUN chmod +x /run.sh
-ENTRYPOINT ["/run.sh"]
+COPY run.sh run.sh
+RUN sleep 5
+RUN sed -i 's/\r$//' run.sh && chmod +x run.sh
+ENTRYPOINT ["./run.sh"]
