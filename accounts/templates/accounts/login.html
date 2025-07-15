@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Login</title>
+    <style>
+        body {
+            background: #37474f;
+            font-family: 'Montserrat', Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+        .login-card {
+            background: #263238;
+            max-width: 400px;
+            margin: 5em auto;
+            border-radius: 8px;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.15);
+            padding: 2em 2em 2.5em 2em;
+            color: #aeeeee;
+        }
+        h1 {
+            text-align: center;
+            font-size: 2.5em;
+            color: #aeeeee;
+            margin-bottom: 0.2em;
+            letter-spacing: 2px;
+        }
+        .subtitle {
+            text-align: center;
+            font-size: 1em;
+            color: #aeeeee;
+            margin-bottom: 2em;
+            letter-spacing: 1px;
+        }
+        .form-group {
+            margin-bottom: 1.5em;
+        }
+        input[type="text"], input[type="password"] {
+            width: 100%;
+            padding: 0.8em;
+            border: 2px solid #aeeeee;
+            border-radius: 4px;
+            background: transparent;
+            color: #aeeeee;
+            font-size: 1em;
+            margin-bottom: 0.5em;
+        }
+        input:focus {
+            outline: none;
+            border-color: #00bfa5;
+        }
+        .connect-btn {
+            width: 100%;
+            padding: 0.9em;
+            background: #aeeeee;
+            color: #263238;
+            border: none;
+            border-radius: 4px;
+            font-size: 1.1em;
+            font-weight: bold;
+            margin-top: 1em;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .connect-btn:hover {
+            background: #00bfa5;
+            color: #fff;
+        }
+        .options {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 1em;
+            font-size: 1em;
+            color: #aeeeee;
+        }
+        .options label {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+        }
+        .options a {
+            color: #aeeeee;
+            text-decoration: underline;
+            font-size: 0.98em;
+        }
+        .errorlist {
+            color: #ff5252;
+            margin-bottom: 0.5em;
+            font-size: 0.95em;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-card">
+        <h1>SIGN UP</h1>
+        <div class="subtitle">DON'T HAVE AN ACCOUNT CREATE NOW</div>
+        <form method="post">
+            {% csrf_token %}
+            {% if error %}
+                <div class="errorlist">{{ error }}</div>
+            {% endif %}
+            <div class="form-group">
+                <input type="text" name="username" placeholder="Username" required>
+            </div>
+            <div class="form-group">
+                <input type="password" name="password" placeholder="Password" required>
+            </div>
+            <button type="submit" class="connect-btn">CONNECT</button>
+        </form>
+    </div>
+</body>
+</html>

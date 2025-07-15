@@ -1,10 +1,16 @@
 FROM python:3.12-slim
 ENV PYTHONUNBUFFERED=1
-WORKDIR /usr/src/app
-COPY . /usr/src/app/
-COPY requirements.txt ./
-RUN pip install --no-cache-dir -r requirements.txt
-COPY run.sh run.sh
-RUN sleep 5
-RUN sed -i 's/\r$//' run.sh && chmod +x run.sh
-ENTRYPOINT ["./run.sh"]
+
+WORKDIR /app
+
+COPY requirements.txt .
+RUN pip install -r requirements.txt
+
+RUN apt-get update && apt-get install -y netcat-openbsd
+
+COPY . .
+
+COPY entrypoint.sh /entrypoint.sh
+RUN sed -i 's/\r$//' /entrypoint.sh && chmod +x /entrypoint.sh
+
+ENTRYPOINT ["/entrypoint.sh"]

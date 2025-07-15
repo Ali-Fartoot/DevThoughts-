@@ -1,10 +1,8 @@
 services:
   devthoughts:
     build: .
-    command: /usr/src/app/run.sh
-
     volumes:
-      - ./:/user/src/app
+      - ./:/app  
     ports:
       - 8000:8000
     depends_on:
@@ -16,7 +14,7 @@ services:
     image: postgres
     container_name: pgdb
     volumes:
-      - db_data:/var/lib/postgresql/db_data
+      - db_data:/var/lib/postgresql/data
     env_file:
       - example.env
 
