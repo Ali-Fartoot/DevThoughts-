@@ -1,7 +1,8 @@
 TODO:
-handle settings url
-handle settings tempalates
-handle view
+
+add ui to settings and update request
+add (ADD) button in blogs
+add main ui ('\')
 
 
 GROK:
