@@ -91,12 +91,20 @@
             font-size: 0.95em;
             text-align: center;
         }
+        .signup-link {
+            text-align: center;
+            margin-top: 1em;
+        }
+        .signup-link a {
+            color: #aeeeee;
+            text-decoration: underline;
+        }
     </style>
 </head>
 <body>
     <div class="login-card">
-        <h1>SIGN UP</h1>
-        <div class="subtitle">DON'T HAVE AN ACCOUNT CREATE NOW</div>
+        <h1>LOGIN</h1>
+        <div class="subtitle">ENTER YOUR CREDENTIALS</div>
         <form method="post">
             {% csrf_token %}
             {% if error %}
@@ -110,6 +118,9 @@
             </div>
             <button type="submit" class="connect-btn">CONNECT</button>
         </form>
+        <div class="signup-link">
+            <a href="{% url 'signup' %}">Don't have an account? Sign up</a>
+        </div>
     </div>
 </body>
 </html>
