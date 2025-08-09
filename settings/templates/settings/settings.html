@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Settings</title>
+</head>
+<body>
+    <h1>Settings</h1>
+    <ul>
+        <li><a href=" {% url 'settings:profile_settings' user_id=user_id %} ">Profile Settings</a></li>
+        <li><a href="{% url 'settings:privacy_settings' user_id=user_id %}">Privacy Settings</a></li>
+        <li><a href="{% url 'settings:display_settings' user_id=user_id %}">Display Settings</a></li>
+    </ul>
+</body>
+</html>

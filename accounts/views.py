@@ -7,8 +7,9 @@ def signup(request):
     if request.method == 'POST':
         form = UserRegistrationForm(request.POST)
         if form.is_valid():
-            form.save()
-            return redirect('blogs')
+            user = form.save()
+            auth_login(request, user)
+            return redirect('blog', user_id=user.id)
 
     else:
         form = UserRegistrationForm()    
@@ -23,14 +24,17 @@ def login(request):
 
         if user is not None:
             auth_login(request, user)
-            return redirect('blogs')
+            return redirect('blog', user_id=user.id)
         else:
-            return render(request, 'login.html', {
+            return render(request, 'accounts/login.html', {
                 'error': 'Invalid credentials'
             })
 
     return render(request, 'accounts/login.html')
 
+from .decorators import user_exists_required
+
+@user_exists_required
 def user_profile_view(request, user_id):
     """User profile view"""
     user = get_object_or_404(User, id=user_id)

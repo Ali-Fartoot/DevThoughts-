@@ -13,11 +13,16 @@ echo "Creating superuser..."
 python manage.py shell << EOF
 from django.contrib.auth import get_user_model
 User = get_user_model()
-if not User.objects.filter(username='admin').exists():
+try:
+    user = User.objects.get(username='admin')
+    user.set_password('admin')
+    user.is_staff = True
+    user.is_superuser = True
+    user.save()
+    print('Superuser password updated and permissions ensured.')
+except User.DoesNotExist:
     User.objects.create_superuser('admin', 'admin@example.com', 'admin')
     print('Superuser created')
-else:
-    print('Superuser already exists')
 EOF
 echo "Starting server..."
 python manage.py runserver 0.0.0.0:8000
