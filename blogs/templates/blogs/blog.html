@@ -5,8 +5,13 @@
     <meta name="viewport" content="width=device-width, inital-scale=1.0">
 <head>
 <body>
-    <a href="{% url 'settings:settings' user_id=user_id %}">
+    <a href="{% url 'settings:settings_menu' username=username %}">
         <button>Settings</button>
     </a>
+
+    {% comment %} <a href="{% url 'blog:add' username=username %}">
+        <button> Add </button>
+    </a> {% endcomment %}
+
 </body>
 </html>

@@ -10,25 +10,17 @@ def user_exists_required(view_func):
     Redirects to the login page if the user is not authenticated or to the signup 
     page if the user does not exist.
     """
+    @login_required
     @wraps(view_func)
-    def _wrapped_view(request, user_id, *args, **kwargs):
-        # First check if user is authenticated
-        if not request.user.is_authenticated:
-            # Redirect to login page if not authenticated
-            return redirect('login')
-        
+    def _wrapped_view(request, username, *args, **kwargs):
         try:
-            # Check if the user exists
-            user = User.objects.get(pk=user_id)
+            target_user = User.objects.get(username=username)
+
         except User.DoesNotExist:
-            # Redirect to signup if the user is not found
-            return redirect('signup')
+            return redirect('accounts:signup') 
             
-        # Check if the authenticated user is the same as the user in the URL
-        if request.user.id != user_id:
-            # Return forbidden response if trying to access another user's settings
-            return redirect('login')
-            
-        # If the user exists and is authenticated, proceed with the original view
-        return view_func(request, user_id, *args, **kwargs)
+        if request.user.id != target_user.id:
+            return redirect('accounts:login')
+
+        return view_func(request, username, *args, **kwargs)
     return _wrapped_view

@@ -6,9 +6,11 @@
 <body>
     <h1>Settings</h1>
     <ul>
-        <li><a href=" {% url 'settings:profile_settings' user_id=user_id %} ">Profile Settings</a></li>
-        <li><a href="{% url 'settings:privacy_settings' user_id=user_id %}">Privacy Settings</a></li>
-        <li><a href="{% url 'settings:display_settings' user_id=user_id %}">Display Settings</a></li>
+        <li><a href=" {% url 'settings:profile_settings' username=username %} ">Profile Settings</a></li>
+        <li><a href="{% url 'settings:privacy_settings' username=username %}">Privacy Settings</a></li>
+        <li><a href="{% url 'settings:display_settings' username=username %}">Display Settings</a></li>
     </ul>
+
+    <a href="{% url 'blog:panel' username=username %}">Profile</a>
 </body>
 </html>

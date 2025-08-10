@@ -9,7 +9,7 @@ def signup(request):
         if form.is_valid():
             user = form.save()
             auth_login(request, user)
-            return redirect('blog', user_id=user.id)
+            return redirect('blog:panel', username=user.username)
 
     else:
         form = UserRegistrationForm()    
@@ -24,7 +24,7 @@ def login(request):
 
         if user is not None:
             auth_login(request, user)
-            return redirect('blog', user_id=user.id)
+            return redirect('blog:panel', username=user.username)
         else:
             return render(request, 'accounts/login.html', {
                 'error': 'Invalid credentials'
@@ -35,9 +35,9 @@ def login(request):
 from .decorators import user_exists_required
 
 @user_exists_required
-def user_profile_view(request, user_id):
+def user_profile_view(request, username):
     """User profile view"""
-    user = get_object_or_404(User, id=user_id)
+    user = get_object_or_404(User, username=username)
     profile = user.profile
     
     context = {
