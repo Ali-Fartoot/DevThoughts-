@@ -1,10 +1,6 @@
 TODO:
-
-add react
+add react + vite Convert that.
+add Mongo
 add GraphQL query blogs
-
-
-GROK:
-/ → Main page (blogs app).
-/blogs/add/ → Add post (blogs app).
-/profiles/settings/ → User settings (profiles app).
+OPtional: redis
+complete blogs

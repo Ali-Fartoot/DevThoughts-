@@ -2,13 +2,14 @@ services:
   devthoughts:
     build: .
     volumes:
-      - ./:/app  
+      - ./backend:/app
     ports:
       - 8000:8000
     depends_on:
       - pgdb
     env_file:
       - example.env
+    working_dir: /app
   
   pgdb:
     image: postgres
