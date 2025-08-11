@@ -1,8 +1,7 @@
 TODO:
 
-add main ui ('\')
-add post, update method for settings TODO
-add GraphQL query for settings.
+add react
+add GraphQL query blogs
 
 
 GROK:
