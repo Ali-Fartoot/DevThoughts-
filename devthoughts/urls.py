@@ -17,9 +17,11 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from django.contrib.auth import views as auth_views
+from . import views as devthoughts_views
 
 urlpatterns = [
-    path('', include('accounts.urls', namespace='accounts')),
+    path('', devthoughts_views.home_view, name='home'),
+    path('accounts/', include('accounts.urls', namespace='accounts')),
     path('admin/', admin.site.urls),
     path('blog/', include('blogs.urls', namespace='blog')),
     path('settings/', include('settings.urls', namespace='settings')),

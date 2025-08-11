@@ -1,8 +1,8 @@
 TODO:
 
-add ui to settings and update request
-add (ADD) button in blogs
 add main ui ('\')
+add post, update method for settings TODO
+add GraphQL query for settings.
 
 
 GROK:

@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Sign Up</title>
+    <title>Profile Settings</title>
     <style>
         body {
             background: #2c2c2c;
@@ -12,7 +12,7 @@
         }
         .card {
             background: #3c3c3c;
-            max-width: 400px;
+            max-width: 600px;
             margin: 4em auto;
             border-radius: 8px;
             box-shadow: 0 4px 24px rgba(0,0,0,0.15);
@@ -54,7 +54,7 @@
             margin-bottom: 0.5em;
             font-size: 0.95em;
         }
-        .get-started {
+        .update-btn {
             width: 100%;
             padding: 0.8em;
             background: #007bff;
@@ -67,58 +67,52 @@
             cursor: pointer;
             transition: background 0.2s;
         }
-        .get-started:hover {
+        .update-btn:hover {
             background: #0056b3;
         }
-        .login-link {
-            text-align: center;
-            margin-top: 1.5em;
-        }
-        .login-link a {
-            color: #00aaff;
-            text-decoration: none;
-        }
-        .login-link a:hover {
-            text-decoration: underline;
+        .messages {
+            background: #4caf50;
+            color: white;
+            padding: 1em;
+            border-radius: 4px;
+            margin-bottom: 1.5em;
         }
     </style>
 </head>
 <body>
     <div class="card">
-        <h2>Sign Up for Free</h2>
+        <h2>Profile Settings</h2>
+        
+        {% if messages %}
+            {% for message in messages %}
+                <div class="messages">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+        
         <form method="post">
             {% csrf_token %}
             {{ form.non_field_errors }}
+            
             <div class="form-group">
                 {{ form.username.label_tag }}
                 {{ form.username }}
                 {{ form.username.errors }}
             </div>
+            
             <div class="form-group">
                 {{ form.email.label_tag }}
                 {{ form.email }}
                 {{ form.email.errors }}
             </div>
-            <div class="form-group">
-                {{ form.password.label_tag }}
-                {{ form.password }}
-                {{ form.password.errors }}
-            </div>
-            <div class="form-group">
-                {{ form.password2.label_tag }}
-                {{ form.password2 }}
-                {{ form.password2.errors }}
-            </div>
+            
             <div class="form-group">
                 {{ form.sex.label_tag }}
                 {{ form.sex }}
                 {{ form.sex.errors }}
             </div>
-            <button type="submit" class="get-started">GET STARTED</button>
+            
+            <button type="submit" class="update-btn">Update Profile</button>
         </form>
-        <div class="login-link">
-            <a href="{% url 'accounts:login' %}">I already have an account</a>
-        </div>
     </div>
 </body>
 </html>

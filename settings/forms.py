@@ -1,18 +1,29 @@
 from django import forms
 from .models import UserPreferences
-from accounts.models import Profile
 
-class UserPreferencesForm(forms.ModelForm):
+class PrivacySettingsForm(forms.ModelForm):
+    show_phone = forms.BooleanField(required=False)
+    show_email = forms.BooleanField(required=False)
+
     class Meta:
         model = UserPreferences
-        fields = ['timezone', 'profile_visibility', 'show_phone', 'show_email']
-    
+        fields = ['profile_visibility', 'show_phone', 'show_email']
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields['show_phone'].required = False
-        self.fields['show_email'].required = False
+        if self.instance and hasattr(self.instance, 'pk') and self.instance.pk:
+            self.fields['show_phone'].initial = self.instance.show_phone
+            self.fields['show_email'].initial = self.instance.show_email
+        self.fields['show_phone'].widget.attrs.update({'class': 'toggle-checkbox'})
+        self.fields['show_email'].widget.attrs.update({'class': 'toggle-checkbox'})
 
-class ProfileForm(forms.ModelForm):
+class DisplaySettingsForm(forms.ModelForm):
     class Meta:
-        model = Profile
-        fields = ['sex']
+        model = UserPreferences
+        fields = ['timezone']
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Set default value for timezone field
+        if not self.instance or not self.instance.timezone:
+            self.fields['timezone'].initial = 'UTC'

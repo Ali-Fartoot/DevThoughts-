@@ -2,9 +2,168 @@
 <html>
 <head>
     <title>Display Settings</title>
+    <style>
+        body {
+            background-color: #2c2c2c;
+            color: #f1f1f1;
+            font-family: sans-serif;
+            line-height: 1.6;
+            margin: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: auto;
+            background-color: #3c3c3c;
+            padding: 20px;
+            border-radius: 8px;
+        }
+        h1 {
+            color: #f1f1f1;
+        }
+        a {
+            text-decoration: none;
+            color: #00aaff;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        .back-link {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 10px 15px;
+            background-color: #007bff;
+            color: white;
+            border-radius: 5px;
+        }
+        .back-link:hover {
+            background-color: #0056b3;
+        }
+        .preference-item {
+            margin-bottom: 15px;
+            padding: 10px;
+            background-color: #444;
+            border-radius: 5px;
+        }
+        .preference-label {
+            font-weight: bold;
+            color: #00aaff;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        select, input[type="text"] {
+            width: 100%;
+            padding: 8px;
+            border-radius: 4px;
+            border: 1px solid #555;
+            background-color: #444;
+            color: #f1f1f1;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .messages {
+            padding: 10px;
+            margin-bottom: 15px;
+            border-radius: 5px;
+        }
+        .success {
+            background-color: #28a745;
+            color: white;
+        }
+        
+        /* Toggle switch styles */
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 34px;
+        }
+        
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 34px;
+        }
+        
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        
+        input:checked + .slider {
+            background-color: #007bff;
+        }
+        
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+        
+        .toggle-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .toggle-label {
+            margin-right: 10px;
+        }
+    </style>
 </head>
 <body>
-    <h1>Display Settings</h1>
-    <a href="{% url 'settings:settings_menu' username=username %}">Back to Settings</a>
+    <div class="container">
+        <h1>Display Settings</h1>
+        
+        {% if messages %}
+            {% for message in messages %}
+                <div class="messages success">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+        
+        <form method="post">
+            {% csrf_token %}
+            
+            <div class="form-group">
+                <label for="{{ form.timezone.id_for_label }}">Timezone:</label>
+                {{ form.timezone }}
+            </div>
+            
+            <button type="submit">Save Changes</button>
+        </form>
+        
+        <a href="{% url 'settings:settings_menu' username=username %}" class="back-link">Back to Settings</a>
+    </div>
 </body>
 </html>
