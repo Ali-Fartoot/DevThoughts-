@@ -26,10 +26,8 @@ import {
   Search as SearchIcon,
   Send as SendIcon,
   Share as ShareIcon,
-  Logout as LogoutIcon,
 } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
-import { logout } from './auth';
 
 // Mock data for tweets
 const mockTweets = [
@@ -80,16 +78,18 @@ const mockSuggestedFollows = [
   { id: 3, name: "Material UI", username: "mui", avatar: "M" }
 ];
 
-export default function Home({ onLogout }) {
+export default function Home() {
   const [tweets] = useState(mockTweets);
   const [trends] = useState(mockTrends);
   const [suggestedFollows] = useState(mockSuggestedFollows);
   const navigate = useNavigate();
 
-  const handleLogout = () => {
-    logout();
-    if (onLogout) onLogout();
+  const handleLogin = () => {
     navigate('/login');
+  };
+
+  const handleSignup = () => {
+    navigate('/signup');
   };
 
   return (
@@ -112,47 +112,29 @@ export default function Home({ onLogout }) {
           </Typography>
           
           <MenuList>
-            {["Home", "Explore", "Notifications", "Messages", "Bookmarks", "Lists", "Profile"].map((item) => (
+            {["Home", "Explore", "About"].map((item) => (
               <MenuItem key={item}>
                 <ListItemText primary={item} />
               </MenuItem>
             ))}
-            <MenuItem onClick={handleLogout}>
-              <ListItemText primary="Logout" />
-              <LogoutIcon />
-            </MenuItem>
           </MenuList>
           
-          <Button
-            variant="contained"
-            fullWidth
-            sx={{ mt: 2 }}
-            startIcon={<AddIcon />}
-          >
-            Post
-          </Button>
-          
-          <Box sx={{ mt: 3, p: 2, bgcolor: 'action.hover', borderRadius: 1 }}>
-            <Box sx={{ display: 'flex', alignItems: 'center' }}>
-              <Box
-                sx={{
-                  width: 40,
-                  height: 40,
-                  borderRadius: '50%',
-                  bgcolor: 'primary.main',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  mr: 2,
-                }}
-              >
-                <Typography variant="body1" fontWeight="bold">U</Typography>
-              </Box>
-              <Box>
-                <Typography variant="body1" fontWeight="bold">User Name</Typography>
-                <Typography variant="body2" color="text.secondary">@username</Typography>
-              </Box>
-            </Box>
+          <Box sx={{ mt: 3, p: 2 }}>
+            <Button
+              variant="contained"
+              fullWidth
+              sx={{ mb: 2 }}
+              onClick={handleLogin}
+            >
+              Log in
+            </Button>
+            <Button
+              variant="outlined"
+              fullWidth
+              onClick={handleSignup}
+            >
+              Sign up
+            </Button>
           </Box>
         </Box>
       </Box>
@@ -171,135 +153,86 @@ export default function Home({ onLogout }) {
           <Box sx={{ p: 2 }}>
             <Typography variant="h6">Home</Typography>
           </Box>
-          <Box sx={{ display: 'flex' }}>
-            {["For you", "Following"].map((tab) => (
-              <Box
-                key={tab}
-                sx={{
-                  flex: 1,
-                  textAlign: 'center',
-                  p: 2,
-                  cursor: 'pointer',
-                  borderBottom: tab === "For you" ? 2 : 0,
-                  borderColor: 'primary.main',
-                }}
-              >
-                <Typography fontWeight={tab === "For you" ? 'bold' : 'normal'}>{tab}</Typography>
-              </Box>
-            ))}
-          </Box>
         </Paper>
         
-        <Box sx={{ p: 2, borderBottom: 1, borderColor: 'divider' }}>
-          <Box sx={{ display: 'flex' }}>
-            <Box
-              sx={{
-                width: 48,
-                height: 48,
-                borderRadius: '50%',
-                bgcolor: 'grey.600',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                mr: 2,
-              }}
-            >
-              <Typography fontWeight="bold">U</Typography>
-            </Box>
-            <Box sx={{ flex: 1 }}>
-              <TextField
-                multiline
-                rows={3}
-                placeholder="What is happening?!"
-                fullWidth
-                variant="outlined"
-                sx={{ mb: 1 }}
-              />
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <Box sx={{ color: 'primary.main' }}>
-                  {[ChatIcon, LoopIcon, FavoriteIcon, SendIcon].map((Icon, index) => (
-                    <IconButton key={index} size="small" sx={{ mr: 1 }}>
-                      <Icon fontSize="small" />
-                    </IconButton>
-                  ))}
-                </Box>
-                <Button variant="contained" size="small">
-                  Post
-                </Button>
-              </Box>
-            </Box>
-          </Box>
-        </Box>
-        
-        <Box>
-          {tweets.map((tweet) => (
-            <Box
-              key={tweet.id}
-              sx={{
-                p: 2,
-                borderBottom: 1,
-                borderColor: 'divider',
-                '&:hover': {
-                  bgcolor: 'action.hover',
-                },
-                cursor: 'pointer',
-              }}
-            >
-              <Box sx={{ display: 'flex' }}>
+        <Box sx={{ p: 4, textAlign: 'center' }}>
+          <Typography variant="h4" sx={{ mb: 3 }}>
+            Welcome to My App
+          </Typography>
+          <Typography variant="h6" sx={{ mb: 4 }}>
+            Join our community to share your thoughts and connect with others
+          </Typography>
+          
+          <Box sx={{ mt: 6 }}>
+            <Typography variant="h5" sx={{ mb: 3 }}>
+              Recent Posts
+            </Typography>
+            <Box>
+              {tweets.map((tweet) => (
                 <Box
+                  key={tweet.id}
                   sx={{
-                    width: 48,
-                    height: 48,
-                    borderRadius: '50%',
-                    bgcolor: 'grey.600',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    mr: 2,
-                    flexShrink: 0,
+                    p: 2,
+                    borderBottom: 1,
+                    borderColor: 'divider',
+                    '&:hover': {
+                      bgcolor: 'action.hover',
+                    },
+                    cursor: 'pointer',
                   }}
                 >
-                  <Typography fontWeight="bold">{tweet.name.charAt(0)}</Typography>
+                  <Box sx={{ display: 'flex' }}>
+                    <Box
+                      sx={{
+                        width: 48,
+                        height: 48,
+                        borderRadius: '50%',
+                        bgcolor: 'grey.600',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        mr: 2,
+                        flexShrink: 0,
+                      }}
+                    >
+                      <Typography fontWeight="bold">{tweet.name.charAt(0)}</Typography>
+                    </Box>
+                    <Box sx={{ flex: 1 }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                        <Typography fontWeight="bold">{tweet.name}</Typography>
+                        <Typography sx={{ color: 'text.secondary', mx: 1 }}>@{tweet.username}</Typography>
+                        <Typography sx={{ color: 'text.secondary' }}>·</Typography>
+                        <Typography sx={{ color: 'text.secondary', ml: 1 }}>{tweet.timestamp}</Typography>
+                      </Box>
+                      <Box sx={{ py: 1 }}>
+                        <Typography>{tweet.content}</Typography>
+                      </Box>
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', maxWidth: 300 }}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', color: 'text.secondary' }}>
+                          <IconButton size="small">
+                            <ChatIcon fontSize="small" />
+                          </IconButton>
+                          <Typography variant="body2">{tweet.comments}</Typography>
+                        </Box>
+                        <Box sx={{ display: 'flex', alignItems: 'center', color: 'text.secondary' }}>
+                          <IconButton size="small">
+                            <LoopIcon fontSize="small" />
+                          </IconButton>
+                          <Typography variant="body2">{tweet.retweets}</Typography>
+                        </Box>
+                        <Box sx={{ display: 'flex', alignItems: 'center', color: 'text.secondary' }}>
+                          <IconButton size="small">
+                            <FavoriteIcon fontSize="small" />
+                          </IconButton>
+                          <Typography variant="body2">{tweet.likes}</Typography>
+                        </Box>
+                      </Box>
+                    </Box>
+                  </Box>
                 </Box>
-                <Box sx={{ flex: 1 }}>
-                  <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                    <Typography fontWeight="bold">{tweet.name}</Typography>
-                    <Typography sx={{ color: 'text.secondary', mx: 1 }}>@{tweet.username}</Typography>
-                    <Typography sx={{ color: 'text.secondary' }}>·</Typography>
-                    <Typography sx={{ color: 'text.secondary', ml: 1 }}>{tweet.timestamp}</Typography>
-                  </Box>
-                  <Box sx={{ py: 1 }}>
-                    <Typography>{tweet.content}</Typography>
-                  </Box>
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', maxWidth: 300 }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', color: 'text.secondary' }}>
-                      <IconButton size="small">
-                        <ChatIcon fontSize="small" />
-                      </IconButton>
-                      <Typography variant="body2">{tweet.comments}</Typography>
-                    </Box>
-                    <Box sx={{ display: 'flex', alignItems: 'center', color: 'text.secondary' }}>
-                      <IconButton size="small">
-                        <LoopIcon fontSize="small" />
-                      </IconButton>
-                      <Typography variant="body2">{tweet.retweets}</Typography>
-                    </Box>
-                    <Box sx={{ display: 'flex', alignItems: 'center', color: 'text.secondary' }}>
-                      <IconButton size="small">
-                        <FavoriteIcon fontSize="small" />
-                      </IconButton>
-                      <Typography variant="body2">{tweet.likes}</Typography>
-                    </Box>
-                    <Box sx={{ display: 'flex', alignItems: 'center', color: 'text.secondary' }}>
-                      <IconButton size="small">
-                        <ShareIcon fontSize="small" />
-                      </IconButton>
-                    </Box>
-                  </Box>
-                </Box>
-              </Box>
+              ))}
             </Box>
-          ))}
+          </Box>
         </Box>
       </Box>
       
@@ -411,19 +344,6 @@ export default function Home({ onLogout }) {
           </Box>
         </Box>
       </Box>
-      
-      {/* Floating action button for mobile */}
-      <Fab
-        color="primary"
-        sx={{
-          position: 'fixed',
-          bottom: 16,
-          right: 16,
-          display: { md: 'none' },
-        }}
-      >
-        <AddIcon />
-      </Fab>
     </Box>
   );
 }

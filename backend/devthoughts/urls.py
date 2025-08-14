@@ -20,11 +20,6 @@ from django.contrib.auth import views as auth_views
 from . import views as devthoughts_views
 
 urlpatterns = [
-    path('api/accounts/', include('accounts.api.urls')),
+    path('api/', include('accounts.api.urls')),
     path('admin/', admin.site.urls),
-
-    # path('', devthoughts_views.home_view, name='home'),
-    # path('accounts/', include('accounts.urls', namespace='accounts')),
-    # path('blog/', include('blogs.urls', namespace='blog')),
-    # path('settings/', include('settings.urls', namespace='settings')),
 ]

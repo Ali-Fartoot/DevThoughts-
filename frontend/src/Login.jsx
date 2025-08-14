@@ -87,11 +87,11 @@ export default function Login({ onLogin }) {
       const data = await response.json();
       
       if (response.ok) {
-        // Success - store token and redirect to home page
+        // Success - store token and redirect to user's page
         console.log("Logged in successfully:", data);
         login(data.token);
         if (onLogin) onLogin();
-        navigate('/home');
+        navigate(`/user/${formData.username}`);
       } else {
         // Handle API errors
         if (data.errors) {

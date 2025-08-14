@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react'
 import Signup from './Signup'
 import Login from './Login'
 import Home from './Home'
+import UserPanel from './UserPanel'
+import Settings from './Settings'
 import { ThemeProvider, createTheme } from '@mui/material/styles'
 import CssBaseline from '@mui/material/CssBaseline'
 import { Routes, Route, Navigate } from 'react-router-dom'
@@ -24,6 +26,7 @@ function App() {
   const handleSignup = () => {
     // Logic for signup
     console.log("Signup logic would go here")
+    // After signup, redirect to login page
   }
 
   const handleLogin = () => {
@@ -54,8 +57,10 @@ function App() {
       <Routes>
         <Route path="/signup" element={<Signup onSignup={handleSignup} />} />
         <Route path="/login" element={<Login onLogin={handleLogin} />} />
-        <Route path="/home" element={isAuthenticated ? <Home onLogout={handleLogout} /> : <Navigate to="/login" />} />
-        <Route path="/" element={<Navigate replace to="/signup" />} />
+        <Route path="/home" element={<Home />} />
+        <Route path="/user/:username" element={isAuthenticated ? <UserPanel onLogout={handleLogout} /> : <Navigate to="/login" />} />
+        <Route path="/settings" element={isAuthenticated ? <Settings /> : <Navigate to="/login" />} />
+        <Route path="/" element={<Navigate replace to="/home" />} />
       </Routes>
     </ThemeProvider>
   )
