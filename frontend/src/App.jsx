@@ -1,34 +1,63 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import React, { useState, useEffect } from 'react'
+import Signup from './Signup'
+import Login from './Login'
+import Home from './Home'
+import { ThemeProvider, createTheme } from '@mui/material/styles'
+import CssBaseline from '@mui/material/CssBaseline'
+import { Routes, Route, Navigate } from 'react-router-dom'
+import { isAuthenticated as checkAuth } from './auth'
 
 function App() {
-  const [count, setCount] = useState(0)
+  const theme = createTheme({
+    palette: {
+      mode: 'dark',
+    },
+  })
+
+  const [isAuthenticated, setIsAuthenticated] = useState(checkAuth());
+
+  // Check if user is already logged in on app load
+  useEffect(() => {
+    setIsAuthenticated(checkAuth());
+  }, []);
+
+  const handleSignup = () => {
+    // Logic for signup
+    console.log("Signup logic would go here")
+  }
+
+  const handleLogin = () => {
+    // Logic for login
+    console.log("Login logic would go here")
+    setIsAuthenticated(true);
+  }
+
+  const handleLogout = () => {
+    // Logic for logout
+    console.log("Logout logic would go here")
+    setIsAuthenticated(false);
+  }
+
+  // Watch for changes in authentication state
+  useEffect(() => {
+    const handleStorageChange = () => {
+      setIsAuthenticated(checkAuth());
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, []);
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
+    <ThemeProvider theme={theme}>
+      <CssBaseline />
+      <Routes>
+        <Route path="/signup" element={<Signup onSignup={handleSignup} />} />
+        <Route path="/login" element={<Login onLogin={handleLogin} />} />
+        <Route path="/home" element={isAuthenticated ? <Home onLogout={handleLogout} /> : <Navigate to="/login" />} />
+        <Route path="/" element={<Navigate replace to="/signup" />} />
+      </Routes>
+    </ThemeProvider>
   )
 }
 

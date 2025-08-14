@@ -1,0 +1,8 @@
+node_modules
+package-lock.json
+.git
+.gitignore
+README.md
+.nyc_output
+coverage
+.cache

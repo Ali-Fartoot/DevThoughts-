@@ -1,6 +1,9 @@
+version: '3.8'
 services:
-  devthoughts:
-    build: .
+  backend:
+    build: 
+      context: .
+      dockerfile: Dockerfile.backend
     volumes:
       - ./backend:/app
     ports:
@@ -8,7 +11,7 @@ services:
     depends_on:
       - pgdb
     env_file:
-      - example.env
+      - backend.env
     working_dir: /app
   
   pgdb:
@@ -17,7 +20,21 @@ services:
     volumes:
       - db_data:/var/lib/postgresql/data
     env_file:
-      - example.env
+      - backend.env
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: ../Dockerfile.frontend
+    ports:
+      - 5173:5173
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    env_file:
+      - frontend.env
+    depends_on:
+      - backend
 
 volumes:
   db_data:
