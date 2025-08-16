@@ -7,12 +7,11 @@ from .models import Profile
 @receiver(post_save, sender=User)
 def create_user_profile_and_preferences(sender, instance, created, **kwargs):
     if created:
-        Profile.objects.get_or_create(user=instance)
+        profile, _ = Profile.objects.get_or_create(user=instance)
 
         UserPreferences.objects.get_or_create(
-            user=instance,
+            profile=profile,
             defaults={
-                'show_phone': False,
                 'show_email': True,
                 'profile_visibility': 'public'
             }

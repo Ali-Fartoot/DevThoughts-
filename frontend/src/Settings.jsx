@@ -12,6 +12,8 @@ import {
   Switch,
   TextField,
   Typography,
+  Tabs,
+  Tab,
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 
@@ -23,26 +25,22 @@ export default function Settings() {
   
   // Profile settings state
   const [profileSettings, setProfileSettings] = useState({
-    name: "John Doe",
+    firstName: "John",
+    lastName: "Doe",
     username: "johndoe",
-    bio: "Software developer passionate about React and Node.js",
-    location: "San Francisco, CA",
-    website: "https://johndoe.dev",
+    email: "john.doe@example.com",
+    sex: "male",
   });
   
   // Display settings state
   const [displaySettings, setDisplaySettings] = useState({
-    theme: "dark",
-    language: "en",
-    fontSize: "medium",
+    timezone: "UTC-7",
   });
   
   // Privacy settings state
   const [privacySettings, setPrivacySettings] = useState({
+    showEmail: true,
     profileVisibility: "public",
-    tweetVisibility: "public",
-    showOnlineStatus: true,
-    allowMessages: "everyone",
   });
 
   const handleProfileChange = (e) => {
@@ -75,8 +73,14 @@ export default function Settings() {
     alert("Settings saved successfully!");
   };
 
+  const tabLabels = {
+    profile: "Profile",
+    display: "Display",
+    privacy: "Privacy"
+  };
+
   return (
-    <Container maxWidth="md" sx={{ py: 4 }}>
+    <Container maxWidth="lg" sx={{ py: 4 }}>
       <Box sx={{ mb: 4 }}>
         <Typography variant="h4" fontWeight="bold" gutterBottom>
           Settings
@@ -90,191 +94,152 @@ export default function Settings() {
         </Button>
       </Box>
 
-      {/* Tab Navigation */}
-      <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 4 }}>
-        <Box sx={{ display: 'flex', gap: 2 }}>
-          {["profile", "display", "privacy"].map((tab) => (
-            <Button
-              key={tab}
-              variant={activeTab === tab ? "contained" : "text"}
-              onClick={() => setActiveTab(tab)}
-              sx={{ 
-                textTransform: 'capitalize',
-                fontWeight: activeTab === tab ? 'bold' : 'normal'
-              }}
-            >
-              {tab.charAt(0).toUpperCase() + tab.slice(1)}
-            </Button>
-          ))}
+      <Box sx={{ display: 'flex', gap: 4 }}>
+        {/* Vertical Tabs */}
+        <Box sx={{ width: 200, flexShrink: 0 }}>
+          <Tabs
+            orientation="vertical"
+            variant="scrollable"
+            value={activeTab}
+            onChange={(e, newValue) => setActiveTab(newValue)}
+            sx={{
+              borderRight: 1,
+              borderColor: 'divider',
+              '& .MuiTab-root': {
+                alignItems: 'flex-start',
+                textTransform: 'none',
+                fontWeight: activeTab === "profile" ? 'bold' : 'normal'
+              }
+            }}
+          >
+            {Object.entries(tabLabels).map(([key, label]) => (
+              <Tab 
+                key={key} 
+                value={key} 
+                label={label}
+                sx={{ 
+                  alignItems: 'flex-start',
+                  textTransform: 'none',
+                  fontWeight: activeTab === key ? 'bold' : 'normal'
+                }}
+              />
+            ))}
+          </Tabs>
+        </Box>
+
+        {/* Tab Content */}
+        <Box sx={{ flex: 1, maxWidth: 600 }}>
+          {/* Profile Settings */}
+          {activeTab === "profile" && (
+            <Box>
+              <Typography variant="h5" gutterBottom>Profile Settings</Typography>
+              
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, mt: 3 }}>
+                <TextField
+                  label="First Name"
+                  name="firstName"
+                  value={profileSettings.firstName}
+                  onChange={handleProfileChange}
+                  fullWidth
+                />
+                
+                <TextField
+                  label="Last Name"
+                  name="lastName"
+                  value={profileSettings.lastName}
+                  onChange={handleProfileChange}
+                  fullWidth
+                />
+                
+                <TextField
+                  label="Username"
+                  name="username"
+                  value={profileSettings.username}
+                  onChange={handleProfileChange}
+                  fullWidth
+                />
+                
+                <TextField
+                  label="Email"
+                  name="email"
+                  value={profileSettings.email}
+                  onChange={handleProfileChange}
+                  fullWidth
+                />
+                
+                <FormControl fullWidth>
+                  <InputLabel>Sex</InputLabel>
+                  <Select
+                    name="sex"
+                    value={profileSettings.sex}
+                    onChange={handleProfileChange}
+                    label="Sex"
+                  >
+                    <MenuItem value="male">Male</MenuItem>
+                    <MenuItem value="female">Female</MenuItem>
+                    <MenuItem value="other">Other</MenuItem>
+                    <MenuItem value="prefer-not-to-say">Prefer not to say</MenuItem>
+                  </Select>
+                </FormControl>
+              </Box>
+            </Box>
+          )}
+
+          {/* Display Settings */}
+          {activeTab === "display" && (
+            <Box>
+              <Typography variant="h5" gutterBottom>Display Settings</Typography>
+              
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, mt: 3 }}>
+                <TextField
+                  label="Timezone (UTC)"
+                  name="timezone"
+                  value={displaySettings.timezone}
+                  onChange={handleDisplayChange}
+                  helperText="Enter your timezone in UTC format (e.g., UTC-5, UTC+1)"
+                  fullWidth
+                />
+              </Box>
+            </Box>
+          )}
+
+          {/* Privacy Settings */}
+          {activeTab === "privacy" && (
+            <Box>
+              <Typography variant="h5" gutterBottom>Privacy Settings</Typography>
+              
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, mt: 3 }}>
+                <FormGroup>
+                  <FormControlLabel
+                    control={
+                      <Switch
+                        name="showEmail"
+                        checked={privacySettings.showEmail}
+                        onChange={handlePrivacyChange}
+                      />
+                    }
+                    label="Show email on profile"
+                  />
+                </FormGroup>
+                
+                <FormControl fullWidth>
+                  <InputLabel>Profile Visibility</InputLabel>
+                  <Select
+                    name="profileVisibility"
+                    value={privacySettings.profileVisibility}
+                    onChange={handlePrivacyChange}
+                    label="Profile Visibility"
+                  >
+                    <MenuItem value="public">Public</MenuItem>
+                    <MenuItem value="followers">Followers Only</MenuItem>
+                    <MenuItem value="private">Private</MenuItem>
+                  </Select>
+                </FormControl>
+              </Box>
+            </Box>
+          )}
         </Box>
       </Box>
-
-      {/* Profile Settings */}
-      {activeTab === "profile" && (
-        <Box>
-          <Typography variant="h5" gutterBottom>Profile Settings</Typography>
-          
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, mt: 3 }}>
-            <TextField
-              label="Name"
-              name="name"
-              value={profileSettings.name}
-              onChange={handleProfileChange}
-              fullWidth
-            />
-            
-            <TextField
-              label="Username"
-              name="username"
-              value={profileSettings.username}
-              onChange={handleProfileChange}
-              fullWidth
-            />
-            
-            <TextField
-              label="Bio"
-              name="bio"
-              value={profileSettings.bio}
-              onChange={handleProfileChange}
-              multiline
-              rows={3}
-              fullWidth
-            />
-            
-            <TextField
-              label="Location"
-              name="location"
-              value={profileSettings.location}
-              onChange={handleProfileChange}
-              fullWidth
-            />
-            
-            <TextField
-              label="Website"
-              name="website"
-              value={profileSettings.website}
-              onChange={handleProfileChange}
-              fullWidth
-            />
-          </Box>
-        </Box>
-      )}
-
-      {/* Display Settings */}
-      {activeTab === "display" && (
-        <Box>
-          <Typography variant="h5" gutterBottom>Display Settings</Typography>
-          
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, mt: 3 }}>
-            <FormControl fullWidth>
-              <InputLabel>Theme</InputLabel>
-              <Select
-                name="theme"
-                value={displaySettings.theme}
-                onChange={handleDisplayChange}
-                label="Theme"
-              >
-                <MenuItem value="light">Light</MenuItem>
-                <MenuItem value="dark">Dark</MenuItem>
-                <MenuItem value="auto">Auto</MenuItem>
-              </Select>
-            </FormControl>
-            
-            <FormControl fullWidth>
-              <InputLabel>Language</InputLabel>
-              <Select
-                name="language"
-                value={displaySettings.language}
-                onChange={handleDisplayChange}
-                label="Language"
-              >
-                <MenuItem value="en">English</MenuItem>
-                <MenuItem value="es">Spanish</MenuItem>
-                <MenuItem value="fr">French</MenuItem>
-                <MenuItem value="de">German</MenuItem>
-              </Select>
-            </FormControl>
-            
-            <FormControl fullWidth>
-              <InputLabel>Font Size</InputLabel>
-              <Select
-                name="fontSize"
-                value={displaySettings.fontSize}
-                onChange={handleDisplayChange}
-                label="Font Size"
-              >
-                <MenuItem value="small">Small</MenuItem>
-                <MenuItem value="medium">Medium</MenuItem>
-                <MenuItem value="large">Large</MenuItem>
-              </Select>
-            </FormControl>
-          </Box>
-        </Box>
-      )}
-
-      {/* Privacy Settings */}
-      {activeTab === "privacy" && (
-        <Box>
-          <Typography variant="h5" gutterBottom>Privacy Settings</Typography>
-          
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, mt: 3 }}>
-            <FormControl fullWidth>
-              <InputLabel>Profile Visibility</InputLabel>
-              <Select
-                name="profileVisibility"
-                value={privacySettings.profileVisibility}
-                onChange={handlePrivacyChange}
-                label="Profile Visibility"
-              >
-                <MenuItem value="public">Public</MenuItem>
-                <MenuItem value="followers">Followers Only</MenuItem>
-                <MenuItem value="private">Private</MenuItem>
-              </Select>
-            </FormControl>
-            
-            <FormControl fullWidth>
-              <InputLabel>Tweet Visibility</InputLabel>
-              <Select
-                name="tweetVisibility"
-                value={privacySettings.tweetVisibility}
-                onChange={handlePrivacyChange}
-                label="Tweet Visibility"
-              >
-                <MenuItem value="public">Public</MenuItem>
-                <MenuItem value="followers">Followers Only</MenuItem>
-                <MenuItem value="private">Private</MenuItem>
-              </Select>
-            </FormControl>
-            
-            <FormGroup>
-              <FormControlLabel
-                control={
-                  <Switch
-                    name="showOnlineStatus"
-                    checked={privacySettings.showOnlineStatus}
-                    onChange={handlePrivacyChange}
-                  />
-                }
-                label="Show online status"
-              />
-            </FormGroup>
-            
-            <FormControl fullWidth>
-              <InputLabel>Who can message you</InputLabel>
-              <Select
-                name="allowMessages"
-                value={privacySettings.allowMessages}
-                onChange={handlePrivacyChange}
-                label="Who can message you"
-              >
-                <MenuItem value="everyone">Everyone</MenuItem>
-                <MenuItem value="followers">Followers Only</MenuItem>
-                <MenuItem value="none">No One</MenuItem>
-              </Select>
-            </FormControl>
-          </Box>
-        </Box>
-      )}
 
       {/* Save Button */}
       <Box sx={{ mt: 4, display: 'flex', justifyContent: 'flex-end' }}>
