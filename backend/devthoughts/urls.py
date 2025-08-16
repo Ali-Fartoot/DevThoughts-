@@ -21,6 +21,6 @@ from . import views as devthoughts_views
 
 urlpatterns = [
     path('api/', include('accounts.api.urls')),
+    path('api/settings/', include('settings.api.urls')),
     path('admin/', admin.site.urls),
-    path('settings/', include('settings.api.urls'))
 ]

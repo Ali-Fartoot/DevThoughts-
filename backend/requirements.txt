@@ -4,6 +4,7 @@ sqlparse==0.5.3
 psycopg2-binary
 django-cors-headers
 djangorestframework
+django_extensions
 
 python-dotenv
 pytest

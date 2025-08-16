@@ -24,7 +24,7 @@ export default function UserPanel({ onLogout }) {
     // Fetch user data from backend
     const fetchUserData = async () => {
       try {
-        const response = await fetch(`http://localhost:8000/api/user/${username}/`, {
+        const response = await fetch(`/api/user/${username}/`, {
           headers: {
             'Authorization': `Token ${getToken()}`,
             'Content-Type': 'application/json',
@@ -125,7 +125,7 @@ export default function UserPanel({ onLogout }) {
           variant="outlined"
           fullWidth
           sx={{ mt: 2 }}
-          onClick={() => navigate('/settings')}
+          onClick={() => navigate(`/settings/${username}`)}
         >
           Settings
         </Button>

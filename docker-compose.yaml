@@ -22,19 +22,19 @@ services:
     env_file:
       - backend.env
 
-  frontend:
-    build:
-      context: ./frontend
-      dockerfile: ../Dockerfile.frontend
-    ports:
-      - 5173:5173
-    volumes:
-      - ./frontend:/app
-      - /app/node_modules
-    env_file:
-      - frontend.env
-    depends_on:
-      - backend
+  # frontend:
+  #   build:
+  #     context: ./frontend
+  #     dockerfile: ../Dockerfile.frontend
+  #   ports:
+  #     - 5173:5173
+  #   volumes:
+  #     - ./frontend:/app
+  #     - /app/node_modules
+  #   env_file:
+  #     - frontend.env
+  #   depends_on:
+  #     - backend
 
 volumes:
   db_data:

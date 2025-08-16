@@ -27,7 +27,6 @@ def signup(request):
                 'username': user.username,
                 'email': user.email
             }, status=status.HTTP_201_CREATED)
-        # Log the errors for debugging
         print("Signup validation errors:", serializer.errors)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
