@@ -93,37 +93,47 @@ export default function Home() {
   };
 
   return (
-    <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: 'background.default' }}>
+    <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: '#000', color: '#fff' }}>
       {/* Left sidebar */}
       <Box
         component="nav"
         sx={{
           width: { xs: '100%', md: 250 },
           flexShrink: { md: 0 },
-          bgcolor: 'background.paper',
-          borderRight: 1,
-          borderColor: 'divider',
+          bgcolor: '#000',
+          borderRight: '1px solid #2f3336',
           display: { xs: 'none', md: 'block' },
         }}
       >
         <Box sx={{ p: 2 }}>
           <Typography variant="h6" sx={{ mb: 3 }}>
-            My App
+            DevThoughts
           </Typography>
           
           <MenuList>
             {["Home", "Explore", "About"].map((item) => (
-              <MenuItem key={item}>
+              <MenuItem key={item} sx={{ borderRadius: 99 }}>
                 <ListItemText primary={item} />
               </MenuItem>
             ))}
+             <MenuItem onClick={() => navigate('/search')} sx={{ borderRadius: 99 }}>
+                <SearchIcon sx={{ mr: 2 }} />
+                <ListItemText primary="Search" />
+              </MenuItem>
           </MenuList>
           
           <Box sx={{ mt: 3, p: 2 }}>
             <Button
               variant="contained"
               fullWidth
-              sx={{ mb: 2 }}
+              sx={{ 
+                mb: 2,
+                borderRadius: 99,
+                bgcolor: '#1d9bf0',
+                '&:hover': {
+                  bgcolor: '#1a8cd8',
+                }
+              }}
               onClick={handleLogin}
             >
               Log in
@@ -132,6 +142,15 @@ export default function Home() {
               variant="outlined"
               fullWidth
               onClick={handleSignup}
+              sx={{
+                borderRadius: 99,
+                borderColor: '#1d9bf0',
+                color: '#1d9bf0',
+                '&:hover': {
+                  borderColor: '#1a8cd8',
+                  color: '#1a8cd8',
+                }
+              }}
             >
               Sign up
             </Button>
@@ -144,12 +163,11 @@ export default function Home() {
         component="main"
         sx={{
           flex: 1,
-          borderRight: 1,
-          borderColor: 'divider',
+          borderRight: '1px solid #2f3336',
           maxWidth: { md: 600 },
         }}
       >
-        <Paper square sx={{ position: 'sticky', top: 0, zIndex: 1 }}>
+        <Paper square sx={{ position: 'sticky', top: 0, zIndex: 1, bgcolor: '#000', borderBottom: '1px solid #2f3336' }}>
           <Box sx={{ p: 2 }}>
             <Typography variant="h6">Home</Typography>
           </Box>
@@ -157,9 +175,9 @@ export default function Home() {
         
         <Box sx={{ p: 4, textAlign: 'center' }}>
           <Typography variant="h4" sx={{ mb: 3 }}>
-            Welcome to My App
+            Welcome to DevThoughts
           </Typography>
-          <Typography variant="h6" sx={{ mb: 4 }}>
+          <Typography variant="h6" sx={{ mb: 4, color: 'text.secondary' }}>
             Join our community to share your thoughts and connect with others
           </Typography>
           
@@ -173,12 +191,12 @@ export default function Home() {
                   key={tweet.id}
                   sx={{
                     p: 2,
-                    borderBottom: 1,
-                    borderColor: 'divider',
+                    borderBottom: '1px solid #2f3336',
                     '&:hover': {
-                      bgcolor: 'action.hover',
+                      bgcolor: '#191919',
                     },
                     cursor: 'pointer',
+                    textAlign: 'left',
                   }}
                 >
                   <Box sx={{ display: 'flex' }}>
@@ -187,7 +205,7 @@ export default function Home() {
                         width: 48,
                         height: 48,
                         borderRadius: '50%',
-                        bgcolor: 'grey.600',
+                        bgcolor: 'grey.800',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
@@ -209,19 +227,19 @@ export default function Home() {
                       </Box>
                       <Box sx={{ display: 'flex', justifyContent: 'space-between', maxWidth: 300 }}>
                         <Box sx={{ display: 'flex', alignItems: 'center', color: 'text.secondary' }}>
-                          <IconButton size="small">
+                          <IconButton size="small" sx={{ color: 'inherit' }}>
                             <ChatIcon fontSize="small" />
                           </IconButton>
                           <Typography variant="body2">{tweet.comments}</Typography>
                         </Box>
                         <Box sx={{ display: 'flex', alignItems: 'center', color: 'text.secondary' }}>
-                          <IconButton size="small">
+                          <IconButton size="small" sx={{ color: 'inherit' }}>
                             <LoopIcon fontSize="small" />
                           </IconButton>
                           <Typography variant="body2">{tweet.retweets}</Typography>
                         </Box>
                         <Box sx={{ display: 'flex', alignItems: 'center', color: 'text.secondary' }}>
-                          <IconButton size="small">
+                          <IconButton size="small" sx={{ color: 'inherit' }}>
                             <FavoriteIcon fontSize="small" />
                           </IconButton>
                           <Typography variant="body2">{tweet.likes}</Typography>
@@ -253,15 +271,23 @@ export default function Home() {
             InputProps={{
               startAdornment: (
                 <InputAdornment position="start">
-                  <SearchIcon />
+                  <SearchIcon sx={{ color: 'text.secondary' }}/>
                 </InputAdornment>
               ),
+              sx: {
+                borderRadius: 99,
+                bgcolor: '#202327',
+                color: '#fff',
+                "& .MuiOutlinedInput-notchedOutline": {
+                  border: "none",
+                },
+              }
             }}
             sx={{ mb: 2 }}
           />
           
           {/* Trends */}
-          <Card sx={{ mb: 2 }}>
+          <Card sx={{ mb: 2, bgcolor: '#16181c', color: '#fff', borderRadius: 4 }}>
             <CardHeader title="Trends for you" />
             <List disablePadding>
               {trends.map((trend) => (
@@ -269,19 +295,20 @@ export default function Home() {
                   <ListItemText
                     primary={`#${trend.title}`}
                     secondary={`${trend.category} · Trending · ${trend.tweets} posts`}
+                    secondaryTypographyProps={{ color: 'text.secondary' }}
                   />
                 </ListItem>
               ))}
             </List>
             <Box sx={{ p: 2 }}>
-              <Typography color="primary" sx={{ cursor: 'pointer' }}>
+              <Typography color="#1d9bf0" sx={{ cursor: 'pointer' }}>
                 Show more
               </Typography>
             </Box>
           </Card>
           
           {/* Who to follow */}
-          <Card>
+          <Card sx={{ bgcolor: '#16181c', color: '#fff', borderRadius: 4 }}>
             <CardHeader title="Who to follow" />
             <List disablePadding>
               {suggestedFollows.map((user) => (
@@ -291,7 +318,7 @@ export default function Home() {
                       width: 48,
                       height: 48,
                       borderRadius: '50%',
-                      bgcolor: 'grey.600',
+                      bgcolor: 'grey.800',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
@@ -306,14 +333,14 @@ export default function Home() {
                       @{user.username}
                     </Typography>
                   </Box>
-                  <Button variant="outlined" size="small">
+                  <Button variant="outlined" size="small" sx={{ borderRadius: 99, borderColor: '#fff', color: '#fff' }}>
                     Follow
                   </Button>
                 </ListItem>
               ))}
             </List>
             <Box sx={{ p: 2 }}>
-              <Typography color="primary" sx={{ cursor: 'pointer' }}>
+              <Typography color="#1d9bf0" sx={{ cursor: 'pointer' }}>
                 Show more
               </Typography>
             </Box>
@@ -340,7 +367,7 @@ export default function Home() {
                 </Typography>
               ))}
             </Box>
-            <Box sx={{ mt: 1 }}>© 2025 My Company</Box>
+            <Box sx={{ mt: 1 }}>© 2025 DevThoughts</Box>
           </Box>
         </Box>
       </Box>

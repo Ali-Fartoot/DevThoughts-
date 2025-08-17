@@ -145,7 +145,7 @@ export default function Signup({ onSignup }) {
   };
 
   return (
-    <Box sx={{ minHeight: "100vh", display: "flex", bgcolor: "background.default" }}>
+    <Box sx={{ minHeight: "100vh", display: "flex", bgcolor: "#000", color: "#fff" }}>
       {/* Left side - Branding */}
       <Box
         sx={{
@@ -165,67 +165,16 @@ export default function Signup({ onSignup }) {
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
+            flexDirection: "column",
           }}
         >
-          <Box sx={{ position: "relative" }}>
-            <Box
-              sx={{
-                position: "absolute",
-                inset: 0,
-                bgcolor: "white",
-                borderRadius: "50%",
-                opacity: 0.1,
-                animation: "pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite",
-              }}
-            />
-            {/* Vite logo */}
-            <Box
-              component="svg"
-              sx={{
-                position: "relative",
-                width: 256,
-                height: 256,
-                color: "white",
-              }}
-              viewBox="0 0 256 256"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path d="M128 2l100 170L28 172z" fill="#41d1ff" stroke="#41d1ff" strokeWidth="40" strokeLinejoin="round"/>
-              <path d="M128 2l-100 170L228 172z" fill="#fff" stroke="#fff" strokeWidth="40" strokeLinejoin="round"/>
-            </Box>
-          </Box>
+          <Typography variant="h1" fontWeight="bold" sx={{ color: 'white', letterSpacing: '0.1em' }}>
+            DevThoughts
+          </Typography>
+          <Typography variant="h5" sx={{ color: 'text.secondary', mt: 2 }}>
+            Share your thoughts on development.
+          </Typography>
         </Box>
-        
-        {/* Decorative elements */}
-        <Box
-          sx={{
-            position: "absolute",
-            top: 40,
-            left: 40,
-            width: 96,
-            height: 96,
-            borderRadius: "50%",
-            bgcolor: "blue.500",
-            opacity: 0.1,
-            filter: "blur(64px)",
-            animation: "pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite",
-          }}
-        />
-        <Box
-          sx={{
-            position: "absolute",
-            bottom: 80,
-            right: 40,
-            width: 128,
-            height: 128,
-            borderRadius: "50%",
-            bgcolor: "purple.500",
-            opacity: 0.1,
-            filter: "blur(64px)",
-            animation: "pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite",
-          }}
-        />
       </Box>
       
       {/* Right side - Signup Form */}
@@ -259,7 +208,7 @@ export default function Signup({ onSignup }) {
             <Typography variant="h3" fontWeight="bold" sx={{ mb: 1 }}>
               Happening now
             </Typography>
-            <Typography variant="h5" fontWeight="bold">
+            <Typography variant="h5" fontWeight="bold" color="text.secondary">
               Join today.
             </Typography>
           </Box>
@@ -274,7 +223,26 @@ export default function Signup({ onSignup }) {
               error={!!errors.username}
               helperText={errors.username}
               variant="outlined"
-              sx={{ mb: 3 }}
+              sx={{ 
+                mb: 3,
+                '& .MuiOutlinedInput-root': {
+                  '& fieldset': {
+                    borderColor: '#2f3336',
+                  },
+                  '&:hover fieldset': {
+                    borderColor: '#1d9bf0',
+                  },
+                },
+                '& .MuiInputLabel-root': {
+                  color: 'text.secondary',
+                },
+              }}
+              InputLabelProps={{
+                style: { color: '#fff' },
+              }}
+              inputProps={{
+                style: { color: '#fff' },
+              }}
             />
             
             <TextField
@@ -287,11 +255,43 @@ export default function Signup({ onSignup }) {
               error={!!errors.email}
               helperText={errors.email}
               variant="outlined"
-              sx={{ mb: 3 }}
+              sx={{ 
+                mb: 3,
+                '& .MuiOutlinedInput-root': {
+                  '& fieldset': {
+                    borderColor: '#2f3336',
+                  },
+                  '&:hover fieldset': {
+                    borderColor: '#1d9bf0',
+                  },
+                },
+                '& .MuiInputLabel-root': {
+                  color: 'text.secondary',
+                },
+              }}
+              InputLabelProps={{
+                style: { color: '#fff' },
+              }}
+              inputProps={{
+                style: { color: '#fff' },
+              }}
             />
             
-            <FormControl fullWidth variant="outlined" error={!!errors.password} sx={{ mb: 3 }}>
-              <InputLabel htmlFor="password">Password</InputLabel>
+            <FormControl fullWidth variant="outlined" error={!!errors.password} sx={{ 
+              mb: 3,
+              '& .MuiOutlinedInput-root': {
+                '& fieldset': {
+                  borderColor: '#2f3336',
+                },
+                '&:hover fieldset': {
+                  borderColor: '#1d9bf0',
+                },
+              },
+              '& .MuiInputLabel-root': {
+                color: 'text.secondary',
+              },
+            }}>
+              <InputLabel htmlFor="password" sx={{ color: '#fff' }}>Password</InputLabel>
               <OutlinedInput
                 id="password"
                 type={showPassword ? "text" : "password"}
@@ -303,20 +303,35 @@ export default function Signup({ onSignup }) {
                       aria-label="toggle password visibility"
                       onClick={handleClickShowPassword}
                       edge="end"
+                      sx={{ color: 'text.secondary' }}
                     >
                       {showPassword ? <VisibilityOff /> : <Visibility />}
                     </IconButton>
                   </InputAdornment>
                 }
                 label="Password"
+                sx={{ color: '#fff' }}
               />
               {errors.password && (
                 <FormHelperText>{errors.password}</FormHelperText>
               )}
             </FormControl>
 
-            <FormControl fullWidth variant="outlined" error={!!errors.password2} sx={{ mb: 3 }}>
-              <InputLabel htmlFor="password2">Confirm Password</InputLabel>
+            <FormControl fullWidth variant="outlined" error={!!errors.password2} sx={{ 
+              mb: 3,
+              '& .MuiOutlinedInput-root': {
+                '& fieldset': {
+                  borderColor: '#2f3336',
+                },
+                '&:hover fieldset': {
+                  borderColor: '#1d9bf0',
+                },
+              },
+              '& .MuiInputLabel-root': {
+                color: 'text.secondary',
+              },
+            }}>
+              <InputLabel htmlFor="password2" sx={{ color: '#fff' }}>Confirm Password</InputLabel>
               <OutlinedInput
                 id="password2"
                 type={showPassword ? "text" : "password"}
@@ -328,12 +343,14 @@ export default function Signup({ onSignup }) {
                       aria-label="toggle password visibility"
                       onClick={handleClickShowPassword}
                       edge="end"
+                      sx={{ color: 'text.secondary' }}
                     >
                       {showPassword ? <VisibilityOff /> : <Visibility />}
                     </IconButton>
                   </InputAdornment>
                 }
                 label="Confirm Password"
+                sx={{ color: '#fff' }}
               />
               {errors.password2 && (
                 <FormHelperText>{errors.password2}</FormHelperText>
@@ -341,14 +358,28 @@ export default function Signup({ onSignup }) {
             </FormControl>
             
             {/* Sex selection field */}
-            <FormControl fullWidth variant="outlined" error={!!errors.sex} sx={{ mb: 3 }}>
-              <InputLabel id="sex-label">Sex</InputLabel>
+            <FormControl fullWidth variant="outlined" error={!!errors.sex} sx={{ 
+              mb: 3,
+              '& .MuiOutlinedInput-root': {
+                '& fieldset': {
+                  borderColor: '#2f3336',
+                },
+                '&:hover fieldset': {
+                  borderColor: '#1d9bf0',
+                },
+              },
+              '& .MuiInputLabel-root': {
+                color: 'text.secondary',
+              },
+            }}>
+              <InputLabel id="sex-label" sx={{ color: '#fff' }}>Sex</InputLabel>
               <Select
                 labelId="sex-label"
                 id="sex"
                 value={formData.sex}
                 onChange={handleSexChange}
                 label="Sex"
+                sx={{ color: '#fff' }}
               >
                 <MenuItem value="">
                   <em>Select</em>
@@ -367,19 +398,28 @@ export default function Signup({ onSignup }) {
               variant="contained"
               fullWidth
               disabled={isSubmitting}
-              sx={{ py: 1.5, mt: 2, mb: 3 }}
+              sx={{ 
+                py: 1.5, 
+                mt: 2, 
+                mb: 3,
+                borderRadius: 99,
+                bgcolor: '#1d9bf0',
+                '&:hover': {
+                  bgcolor: '#1a8cd8',
+                }
+              }}
             >
               {isSubmitting ? "Creating account..." : "Create account"}
             </Button>
           </Box>
           
           <Box sx={{ mt: 6 }}>
-            <Typography color="text.primary">
+            <Typography color="text.secondary">
               Already have an account?{" "}
               <Box
                 component="a"
                 href="/login"
-                sx={{ color: "primary.main", textDecoration: "none", fontWeight: "medium" }}
+                sx={{ color: "#1d9bf0", textDecoration: "none", fontWeight: "medium" }}
               >
                 Sign in
               </Box>

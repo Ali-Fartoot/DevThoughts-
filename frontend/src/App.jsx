@@ -4,6 +4,8 @@ import Login from './Login'
 import Home from './Home'
 import UserPanel from './UserPanel'
 import Settings from './Settings'
+import CreatePost from './CreatePost'
+import Search from './Search'
 import { ThemeProvider, createTheme } from '@mui/material/styles'
 import CssBaseline from '@mui/material/CssBaseline'
 import { Routes, Route, Navigate } from 'react-router-dom'
@@ -13,6 +15,16 @@ function App() {
   const theme = createTheme({
     palette: {
       mode: 'dark',
+      primary: {
+        main: '#9c27b0', // Vibrant purple
+      },
+      secondary: {
+        main: '#ff4081', // Pink
+      },
+      background: {
+        default: '#121212', // Dark background
+        paper: '#1e1e2e',   // Slightly lighter for paper elements
+      },
     },
   })
 
@@ -60,6 +72,8 @@ function App() {
         <Route path="/home" element={<Home />} />
         <Route path="/user/:username" element={isAuthenticated ? <UserPanel onLogout={handleLogout} /> : <Navigate to="/login" />} />
         <Route path="/settings/:username" element={isAuthenticated ? <Settings /> : <Navigate to="/login" />} />
+        <Route path="/create-post" element={isAuthenticated ? <CreatePost open={true} /> : <Navigate to="/login" />} />
+        <Route path="/search" element={<Search />} />
         <Route path="/" element={<Navigate replace to="/home" />} />
       </Routes>
     </ThemeProvider>

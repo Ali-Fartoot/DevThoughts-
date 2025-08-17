@@ -216,202 +216,241 @@ export default function Settings() {
   };
 
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
-      <Box sx={{ mb: 4 }}>
-        <Typography variant="h4" fontWeight="bold" gutterBottom>
-          Settings
-        </Typography>
-        <Button 
-          variant="outlined" 
-          onClick={() => navigate(`/user/${username}`)}
-          sx={{ mt: 2 }}
-        >
-          Back to Profile
-        </Button>
-      </Box>
-
-      {/* Loading indicator */}
-      {loading && (
-        <Box sx={{ display: 'flex', justifyContent: 'center', my: 4 }}>
-          <Typography>Loading settings...</Typography>
+    <Box sx={{ bgcolor: '#000', color: '#fff', minHeight: '100vh' }}>
+      <Container maxWidth="lg" sx={{ py: 4 }}>
+        <Box sx={{ mb: 4 }}>
+          <Typography variant="h4" fontWeight="bold" gutterBottom>
+            Settings
+          </Typography>
+          <Button 
+            variant="outlined" 
+            onClick={() => navigate(`/user/${username}`)}
+            sx={{ 
+              mt: 2,
+              borderColor: '#1d9bf0',
+              color: '#1d9bf0',
+              '&:hover': {
+                borderColor: '#1a8cd8',
+              }
+            }}
+          >
+            Back to Profile
+          </Button>
         </Box>
-      )}
 
-      {/* Error message */}
-      {error && !success && (
-        <Alert severity="error" onClose={() => setError(null)} sx={{ mb: 2 }}>
-          {error}
-        </Alert>
-      )}
+        {/* Loading indicator */}
+        {loading && (
+          <Box sx={{ display: 'flex', justifyContent: 'center', my: 4 }}>
+            <Typography>Loading settings...</Typography>
+          </Box>
+        )}
 
-      {/* Success message */}
-      <Snackbar 
-        open={success} 
-        autoHideDuration={6000} 
-        onClose={handleCloseSnackbar}
-        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
-      >
-        <Alert onClose={handleCloseSnackbar} severity="success" sx={{ width: '100%' }}>
-          Settings saved successfully!
-        </Alert>
-      </Snackbar>
+        {/* Error message */}
+        {error && !success && (
+          <Alert severity="error" onClose={() => setError(null)} sx={{ mb: 2, bgcolor: '#ff3333', color: '#fff' }}>
+            {error}
+          </Alert>
+        )}
 
-      {!loading && (
-        <Box sx={{ display: 'flex', gap: 4 }}>
-          {/* Vertical Tabs */}
-          <Box sx={{ width: 200, flexShrink: 0 }}>
-            <Tabs
-              orientation="vertical"
-              variant="scrollable"
-              value={activeTab}
-              onChange={(e, newValue) => setActiveTab(newValue)}
-              sx={{
-                borderRight: 1,
-                borderColor: 'divider',
-                '& .MuiTab-root': {
-                  alignItems: 'flex-start',
-                  textTransform: 'none',
-                  fontWeight: activeTab === "profile" ? 'bold' : 'normal'
-                }
-              }}
-            >
-              {Object.entries(tabLabels).map(([key, label]) => (
-                <Tab 
-                  key={key} 
-                  value={key} 
-                  label={label}
-                  sx={{ 
+        {/* Success message */}
+        <Snackbar 
+          open={success} 
+          autoHideDuration={6000} 
+          onClose={handleCloseSnackbar}
+          anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+        >
+          <Alert onClose={handleCloseSnackbar} severity="success" sx={{ width: '100%', bgcolor: '#1d9bf0', color: '#fff' }}>
+            Settings saved successfully!
+          </Alert>
+        </Snackbar>
+
+        {!loading && (
+          <Box sx={{ display: 'flex', gap: 4 }}>
+            {/* Vertical Tabs */}
+            <Box sx={{ width: 200, flexShrink: 0 }}>
+              <Tabs
+                orientation="vertical"
+                variant="scrollable"
+                value={activeTab}
+                onChange={(e, newValue) => setActiveTab(newValue)}
+                sx={{
+                  borderRight: 1,
+                  borderColor: '#2f3336',
+                  '& .MuiTab-root': {
                     alignItems: 'flex-start',
                     textTransform: 'none',
-                    fontWeight: activeTab === key ? 'bold' : 'normal'
-                  }}
-                />
-              ))}
-            </Tabs>
-          </Box>
+                    color: 'text.secondary',
+                    '&.Mui-selected': {
+                      color: '#1d9bf0',
+                      fontWeight: 'bold',
+                    },
+                  },
+                  '& .MuiTabs-indicator': {
+                    backgroundColor: '#1d9bf0',
+                  }
+                }}
+              >
+                {Object.entries(tabLabels).map(([key, label]) => (
+                  <Tab 
+                    key={key} 
+                    value={key} 
+                    label={label}
+                  />
+                ))}
+              </Tabs>
+            </Box>
 
-          {/* Tab Content */}
-          <Box sx={{ flex: 1, maxWidth: 600 }}>
-            {/* Profile Settings */}
-            {activeTab === "profile" && (
-              <Box>
-                <Typography variant="h5" gutterBottom>Profile Settings</Typography>
-                
-                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, mt: 3 }}>
-                  <TextField
-                    label="First Name"
-                    name="firstName"
-                    value={profileSettings.firstName}
-                    onChange={handleProfileChange}
-                    fullWidth
-                  />
+            {/* Tab Content */}
+            <Box sx={{ flex: 1, maxWidth: 600 }}>
+              {/* Profile Settings */}
+              {activeTab === "profile" && (
+                <Box>
+                  <Typography variant="h5" gutterBottom>Profile Settings</Typography>
                   
-                  <TextField
-                    label="Last Name"
-                    name="lastName"
-                    value={profileSettings.lastName}
-                    onChange={handleProfileChange}
-                    fullWidth
-                  />
-                  
-                  <TextField
-                    label="Username"
-                    name="username"
-                    value={profileSettings.username}
-                    onChange={handleProfileChange}
-                    fullWidth
-                    error={!!fieldErrors.username}
-                    helperText={fieldErrors.username || ""}
-                  />
-                  
-                  <TextField
-                    label="Email"
-                    name="email"
-                    value={profileSettings.email}
-                    onChange={handleProfileChange}
-                    fullWidth
-                  />
-                  
-                  <FormControl fullWidth>
-                    <InputLabel>Sex</InputLabel>
-                    <Select
-                      name="sex"
-                      value={profileSettings.sex}
+                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, mt: 3 }}>
+                    <TextField
+                      label="First Name"
+                      name="firstName"
+                      value={profileSettings.firstName}
                       onChange={handleProfileChange}
-                      label="Sex"
-                    >
-                      <MenuItem value="male">Male</MenuItem>
-                      <MenuItem value="female">Female</MenuItem>
-                      <MenuItem value="other">Other</MenuItem>
-                    </Select>
-                  </FormControl>
-                </Box>
-              </Box>
-            )}
-
-            {/* Display Settings */}
-            {activeTab === "display" && (
-              <Box>
-                <Typography variant="h5" gutterBottom>Display Settings</Typography>
-                
-                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, mt: 3 }}>
-                  <TextField
-                    label="Timezone (UTC)"
-                    name="timezone"
-                    value={displaySettings.timezone}
-                    onChange={handleDisplayChange}
-                    helperText="Enter your timezone in UTC format (e.g., UTC-5, UTC+1)"
-                    fullWidth
-                  />
-                </Box>
-              </Box>
-            )}
-
-            {/* Privacy Settings */}
-            {activeTab === "privacy" && (
-              <Box>
-                <Typography variant="h5" gutterBottom>Privacy Settings</Typography>
-                
-                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, mt: 3 }}>
-                  <FormGroup>
-                    <FormControlLabel
-                      control={
-                        <Switch
-                          name="showEmail"
-                          checked={privacySettings.showEmail}
-                          onChange={handlePrivacyChange}
-                        />
-                      }
-                      label="Show email on profile"
+                      fullWidth
+                      InputLabelProps={{ style: { color: '#fff' } }}
+                      inputProps={{ style: { color: '#fff' } }}
+                      sx={{ '& .MuiOutlinedInput-root': { '& fieldset': { borderColor: '#2f3336' } } }}
                     />
-                  </FormGroup>
-                  
-                  <FormControl fullWidth>
-                    <InputLabel>Profile Visibility</InputLabel>
-                    <Select
-                      name="profileVisibility"
-                      value={privacySettings.profileVisibility}
-                      onChange={handlePrivacyChange}
-                      label="Profile Visibility"
-                    >
-                      <MenuItem value="public">Public</MenuItem>
-                      <MenuItem value="friends">Followers Only</MenuItem>
-                      <MenuItem value="private">Private</MenuItem>
-                    </Select>
-                  </FormControl>
+                    
+                    <TextField
+                      label="Last Name"
+                      name="lastName"
+                      value={profileSettings.lastName}
+                      onChange={handleProfileChange}
+                      fullWidth
+                      InputLabelProps={{ style: { color: '#fff' } }}
+                      inputProps={{ style: { color: '#fff' } }}
+                      sx={{ '& .MuiOutlinedInput-root': { '& fieldset': { borderColor: '#2f3336' } } }}
+                    />
+                    
+                    <TextField
+                      label="Username"
+                      name="username"
+                      value={profileSettings.username}
+                      onChange={handleProfileChange}
+                      fullWidth
+                      error={!!fieldErrors.username}
+                      helperText={fieldErrors.username || ""}
+                      InputLabelProps={{ style: { color: '#fff' } }}
+                      inputProps={{ style: { color: '#fff' } }}
+                      sx={{ '& .MuiOutlinedInput-root': { '& fieldset': { borderColor: '#2f3336' } } }}
+                    />
+                    
+                    <TextField
+                      label="Email"
+                      name="email"
+                      value={profileSettings.email}
+                      onChange={handleProfileChange}
+                      fullWidth
+                      InputLabelProps={{ style: { color: '#fff' } }}
+                      inputProps={{ style: { color: '#fff' } }}
+                      sx={{ '& .MuiOutlinedInput-root': { '& fieldset': { borderColor: '#2f3336' } } }}
+                    />
+                    
+                    <FormControl fullWidth sx={{ '& .MuiOutlinedInput-root': { '& fieldset': { borderColor: '#2f3336' } } }}>
+                      <InputLabel sx={{ color: '#fff' }}>Sex</InputLabel>
+                      <Select
+                        name="sex"
+                        value={profileSettings.sex}
+                        onChange={handleProfileChange}
+                        label="Sex"
+                        sx={{ color: '#fff' }}
+                      >
+                        <MenuItem value="male">Male</MenuItem>
+                        <MenuItem value="female">Female</MenuItem>
+                        <MenuItem value="other">Other</MenuItem>
+                      </Select>
+                    </FormControl>
+                  </Box>
                 </Box>
-              </Box>
-            )}
-          </Box>
-        </Box>
-      )}
+              )}
 
-      {/* Save Button */}
-      <Box sx={{ mt: 4, display: 'flex', justifyContent: 'flex-end' }}>
-        <Button variant="contained" onClick={handleSave} disabled={loading}>
-          Save Changes
-        </Button>
-      </Box>
-    </Container>
+              {/* Display Settings */}
+              {activeTab === "display" && (
+                <Box>
+                  <Typography variant="h5" gutterBottom>Display Settings</Typography>
+                  
+                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, mt: 3 }}>
+                    <TextField
+                      label="Timezone (UTC)"
+                      name="timezone"
+                      value={displaySettings.timezone}
+                      onChange={handleDisplayChange}
+                      helperText="Enter your timezone in UTC format (e.g., UTC-5, UTC+1)"
+                      fullWidth
+                      InputLabelProps={{ style: { color: '#fff' } }}
+                      inputProps={{ style: { color: '#fff' } }}
+                      sx={{ '& .MuiOutlinedInput-root': { '& fieldset': { borderColor: '#2f3336' } } }}
+                    />
+                  </Box>
+                </Box>
+              )}
+
+              {/* Privacy Settings */}
+              {activeTab === "privacy" && (
+                <Box>
+                  <Typography variant="h5" gutterBottom>Privacy Settings</Typography>
+                  
+                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, mt: 3 }}>
+                    <FormGroup>
+                      <FormControlLabel
+                        control={
+                          <Switch
+                            name="showEmail"
+                            checked={privacySettings.showEmail}
+                            onChange={handlePrivacyChange}
+                            sx={{ '& .MuiSwitch-switchBase.Mui-checked': { color: '#1d9bf0' }, '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': { backgroundColor: '#1d9bf0' } }}
+                          />
+                        }
+                        label="Show email on profile"
+                      />
+                    </FormGroup>
+                    
+                    <FormControl fullWidth sx={{ '& .MuiOutlinedInput-root': { '& fieldset': { borderColor: '#2f3336' } } }}>
+                      <InputLabel sx={{ color: '#fff' }}>Profile Visibility</InputLabel>
+                      <Select
+                        name="profileVisibility"
+                        value={privacySettings.profileVisibility}
+                        onChange={handlePrivacyChange}
+                        label="Profile Visibility"
+                        sx={{ color: '#fff' }}
+                      >
+                        <MenuItem value="public">Public</MenuItem>
+                        <MenuItem value="friends">Followers Only</MenuItem>
+                        <MenuItem value="private">Private</MenuItem>
+                      </Select>
+                    </FormControl>
+                  </Box>
+                </Box>
+              )}
+            </Box>
+          </Box>
+        )}
+
+        {/* Save Button */}
+        <Box sx={{ mt: 4, display: 'flex', justifyContent: 'flex-end' }}>
+          <Button 
+            variant="contained" 
+            onClick={handleSave} 
+            disabled={loading}
+            sx={{
+              bgcolor: '#1d9bf0',
+              '&:hover': {
+                bgcolor: '#1a8cd8',
+              }
+            }}
+          >
+            Save Changes
+          </Button>
+        </Box>
+      </Container>
+    </Box>
   );
 }
