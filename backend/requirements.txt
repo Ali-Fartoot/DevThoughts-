@@ -10,5 +10,4 @@ python-dotenv
 pytest
 requests
 
-mongoengine
 pymongo

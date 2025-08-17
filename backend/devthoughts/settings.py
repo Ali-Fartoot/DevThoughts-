@@ -40,10 +40,12 @@ INSTALLED_APPS = [
 
     'corsheaders',
     'rest_framework',
-    'rest_framework.authtoken',  # Added for token authentication
+    'rest_framework.authtoken',
     'django_extensions',
+
+    'posts',
+    'search',
     'accounts',
-    'blogs',
     'settings'
 ]
 
