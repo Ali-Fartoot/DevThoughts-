@@ -10,6 +10,7 @@ services:
       - 8000:8000
     depends_on:
       - pgdb
+      - mongodb
     env_file:
       - backend.env
     working_dir: /app
@@ -22,19 +23,16 @@ services:
     env_file:
       - backend.env
 
-  # frontend:
-  #   build:
-  #     context: ./frontend
-  #     dockerfile: ../Dockerfile.frontend
-  #   ports:
-  #     - 5173:5173
-  #   volumes:
-  #     - ./frontend:/app
-  #     - /app/node_modules
-  #   env_file:
-  #     - frontend.env
-  #   depends_on:
-  #     - backend
+  mongodb:
+    image: mongo:latest
+    container_name: mongodb
+    ports:
+      - '27017:27017'
+    env_file:
+      - backend.env
+    volumes:
+      - mongodb_data:/data/db
 
 volumes:
   db_data:
+  mongodb_data:
