@@ -139,6 +139,12 @@ LOGIN_REDIRECT_URL = '/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+# MongoDB settings
+MONGODB_SETTINGS = {
+    'host': 'mongodb://localhost:27017/',
+    'db': 'devthoughts_db'
+}
+
 # REST Framework settings
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
@@ -148,4 +154,10 @@ REST_FRAMEWORK = {
             'rest_framework.permissions.IsAuthenticated',
     ],
     
+}
+
+# MongoDB settings
+MONGODB_SETTINGS = {
+    'host': 'mongodb://localhost:27017/',
+    'db': 'devthoughts_db'
 }
