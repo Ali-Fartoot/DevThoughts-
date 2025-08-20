@@ -1,16 +1,17 @@
-from pymongo import MongoClient
+from pymongo import MongoClient as PyMongoClient
 import os
 import logging
+from django.conf import settings
 
 logger = logging.getLogger(__name__)
 
-MONGODB_SETTINGS = {
+MONGODB_SETTINGS = getattr(settings, 'MONGODB_SETTINGS', {
     'host': os.getenv('MONGO_HOST', 'localhost'),
     'port': int(os.getenv('MONGO_PORT', 27017)),
     'db': os.getenv('MONGO_DB', 'devthoughts_db'),
     'username': os.getenv('MONGO_INITDB_ROOT_USERNAME'),
     'password': os.getenv('MONGO_INITDB_ROOT_PASSWORD')
-}
+})
 
 class MongoDB:
     _instance = None
@@ -25,13 +26,12 @@ class MongoDB:
     def __init__(self):
         if not self._client:
             try:
-                # Build connection string
                 if MONGODB_SETTINGS['username'] and MONGODB_SETTINGS['password']:
                     uri = f"mongodb://{MONGODB_SETTINGS['username']}:{MONGODB_SETTINGS['password']}@{MONGODB_SETTINGS['host']}:{MONGODB_SETTINGS['port']}/"
                 else:
                     uri = f"mongodb://{MONGODB_SETTINGS['host']}:{MONGODB_SETTINGS['port']}/"
                 
-                self._client = MongoClient(uri)
+                self._client = PyMongoClient(uri)
                 self._db = self._client[MONGODB_SETTINGS['db']]
                 logger.info("MongoDB connection established")
             except Exception as e:
@@ -51,6 +51,5 @@ class MongoDB:
             self._client.close()
 
 
-# Create a singleton instance
-def MongoClient():
+def get_mongo_client():
     return MongoDB()

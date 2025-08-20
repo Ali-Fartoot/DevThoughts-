@@ -14,68 +14,72 @@ class CustomPagination(PageNumberPagination):
     page_size_query_param = 'page_size'
     max_page_size = 100
 
-@api_view(['GET', 'POST'])
+@api_view(['POST'])
 def post_list_create(request):
     """
     List all posts or create a new post
     """
     post_doc = PostDocument()
     
-    if request.method == 'GET':
-        try:
-            page = int(request.GET.get('page', 1))
-            page_size = int(request.GET.get('page_size', 10))
-            search_query = request.GET.get('search', '')
-            
-            skip = (page - 1) * page_size
-            
-            if search_query:
-                posts = post_doc.search_posts(search_query, skip=skip, limit=page_size)
-            else:
-                posts = post_doc.get_all(skip=skip, limit=page_size)
-            
-            serializer = PostSerializer(posts, many=True)
-            
-            return Response({
-                'results': serializer.data,
-                'page': page,
-                'page_size': page_size,
-                'count': len(serializer.data)
-            })
+    try:
+        serializer = PostCreateSerializer(data=request.data)
         
-        except Exception as e:
-            logger.error(f"Error fetching posts: {e}")
-            return Response(
-                {'error': 'Failed to fetch posts'}, 
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
-    
-    elif request.method == 'POST':
-        try:
-            serializer = PostCreateSerializer(data=request.data)
+        if serializer.is_valid():
+            post_data = serializer.validated_data
+            post_data.setdefault('comments', [])
+            post_data.setdefault('likes', [])
             
-            if serializer.is_valid():
-                post_data = serializer.validated_data
-                # Ensure default values
-                post_data.setdefault('comments', [])
-                post_data.setdefault('likes', [])
-                
-                created_post = post_doc.create(post_data)
-                
+            created_post = post_doc.create(post_data)
+            
+            response_serializer = PostSerializer(created_post)
+            return Response(
+                response_serializer.data, 
+                status=status.HTTP_201_CREATED
+            )
+        
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+    except Exception as e:
+        logger.error(f"Error creating post: {e}")
+        return Response(
+            {'error': 'Failed to create post'}, 
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
+
+
+@api_view(['POST'])
+def add_comment(request, post_id):
+    """
+    Add Comment to a post
+    """
+    post_doc = PostDocument()
+
+    try:
+        serializer = PostCreateSerializer(data=request.data)
+
+        if serializer.is_valid():
+            post_data = serializer.validated_data
+            created_post = post_doc.create(post_data)
+            post_data_id = created_post.get('_id')
+            result = post_doc.add_comment(post_id, post_data_id)
+
+            if result:
                 response_serializer = PostSerializer(created_post)
                 return Response(
                     response_serializer.data, 
                     status=status.HTTP_201_CREATED
                 )
-            
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         
-        except Exception as e:
-            logger.error(f"Error creating post: {e}")
-            return Response(
-                {'error': 'Failed to create post'}, 
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
+            else:
+        
+                return Response( {'error': 'Failed to link comment to the post'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR )
+            
+    except Exception as e:
+        return Response(
+            {'error': 'Failed to adding comment'}, 
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
+
 
 @api_view(['GET', 'PUT', 'DELETE'])
 def post_detail(request, post_id):
@@ -103,32 +107,7 @@ def post_detail(request, post_id):
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
     
-    elif request.method == 'PUT':
-        try:
-            serializer = PostUpdateSerializer(data=request.data)
-            
-            if serializer.is_valid():
-                update_data = serializer.validated_data
-                
-                if post_doc.update(post_id, update_data):
-                    updated_post = post_doc.get_by_id(post_id)
-                    response_serializer = PostSerializer(updated_post)
-                    return Response(response_serializer.data)
-                else:
-                    return Response(
-                        {'error': 'Failed to update post'}, 
-                        status=status.HTTP_500_INTERNAL_SERVER_ERROR
-                    )
-            else:
-                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        
-        except Exception as e:
-            logger.error(f"Error updating post {post_id}: {e}")
-            return Response(
-                {'error': 'Failed to update post'}, 
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
-    
+
     elif request.method == 'DELETE':
         try:
             if post_doc.delete(post_id):

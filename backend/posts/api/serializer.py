@@ -28,7 +28,6 @@ class PostSerializer(serializers.Serializer):
     deleted = serializers.BooleanField(read_only=True)
 
 class PostCreateSerializer(serializers.Serializer):
-    user_id = serializers.IntegerField()
     content = PostContentSerializer()
     comments = serializers.ListField(
         child=serializers.CharField(), 

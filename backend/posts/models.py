@@ -2,7 +2,7 @@ from bson import ObjectId
 from datetime import datetime
 from typing import Optional, Dict, Any, List
 import json
-from base import BaseDocument
+from posts.base import BaseDocument
 
 class PostDocument(BaseDocument):
     def __init__(self):
@@ -28,7 +28,7 @@ class PostDocument(BaseDocument):
     def get_all(self, skip: int = 0, limit: int = 100) -> list:
         docs = self.collection.find({'deleted': False}).skip(skip).limit(limit)
         return self.to_dict_list(list(docs))
-    
+
     def delete(self, post_id: str) -> bool:
         try:
             result = self.collection.update_one(

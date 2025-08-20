@@ -141,23 +141,9 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # MongoDB settings
 MONGODB_SETTINGS = {
-    'host': 'mongodb://localhost:27017/',
-    'db': 'devthoughts_db'
-}
-
-# REST Framework settings
-REST_FRAMEWORK = {
-    'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework.authentication.TokenAuthentication',
-    ],
-    'DEFAULT_PERMISSION_CLASSES': [
-            'rest_framework.permissions.IsAuthenticated',
-    ],
-    
-}
-
-# MongoDB settings
-MONGODB_SETTINGS = {
-    'host': 'mongodb://localhost:27017/',
-    'db': 'devthoughts_db'
+    'host': os.getenv('MONGO_HOST', 'localhost'),
+    'port': int(os.getenv('MONGO_PORT', 27017)),
+    'db': os.getenv('MONGO_DB', 'devthoughts_db'),
+    'username': os.getenv('MONGO_INITDB_ROOT_USERNAME'),
+    'password': os.getenv('MONGO_INITDB_ROOT_PASSWORD')
 }

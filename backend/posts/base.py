@@ -1,10 +1,10 @@
 from typing import Dict, List
 from bson import ObjectId
-from posts.mongo_db import MongoClient
+from mongo import get_mongo_client
 
 class BaseDocument:
     def __init__(self, collection_name: str):
-        self.collection = MongoClient().db[collection_name]
+        self.collection = get_mongo_client().db[collection_name]
     
     def to_dict(self, doc: Dict) -> Dict:
         """Convert MongoDB document to dictionary with string IDs"""
