@@ -12,6 +12,8 @@ import {
   Divider,
   Paper,
   Fab,
+  Snackbar,
+  Alert,
 } from "@mui/material";
 import {
   Home as HomeIcon,
@@ -23,87 +25,88 @@ import {
 import { useNavigate, useParams } from "react-router-dom";
 import { logout, isAuthenticated, getToken } from './auth';
 import CreatePost from './CreatePost';
-
-// Mock data for user posts
-const mockUserPosts = [
-  {
-    id: 1,
-    content: "Just finished working on my new project! Feeling accomplished. #coding #development",
-    timestamp: "2 hours ago",
-    likes: 24,
-    comments: 5
-  },
-  {
-    id: 2,
-    content: "Beautiful day for a walk in the park. Nature always helps clear my mind. 🌳",
-    timestamp: "1 day ago",
-    likes: 42,
-    comments: 3
-  },
-  {
-    id: 3,
-    content: "Learning something new every day keeps the mind sharp. What are you working on today?",
-    timestamp: "3 days ago",
-    likes: 18,
-    comments: 7
-  }
-];
+import Post from './Post';
 
 export default function UserPanel({ onLogout }) {
   const [userData, setUserData] = useState(null);
   const [settings, setSettings] = useState(null);
   const [loading, setLoading] = useState(true);
   const [openCreatePost, setOpenCreatePost] = useState(false);
-  const [userPosts] = useState(mockUserPosts);
+  const [userPosts, setUserPosts] = useState([]);
+  const [error, setError] = useState("");
   const navigate = useNavigate();
   const { username } = useParams();
 
-  // Check authentication on component mount
+  const currentUser = localStorage.getItem('username') || null;
+
   useEffect(() => {
     if (!isAuthenticated()) {
       navigate('/login');
       return;
     }
-    
-    // Fetch user data and settings from backend
+
     const fetchUserDataAndSettings = async () => {
+      // Use username from params first, then fall back to currentUser from localStorage
+      const targetUsername = username || currentUser;
+
+      // Check if targetUsername is valid
+      if (!targetUsername || targetUsername === 'default') {
+        setError("Failed to identify user. Please login again.");
+        setLoading(false);
+        return;
+      }
+
       try {
+        setLoading(true);
         const token = getToken();
+        if (!token) {
+          throw new Error("User not authenticated");
+        }
+
         const headers = {
           'Authorization': `Token ${token}`,
           'Content-Type': 'application/json',
         };
 
-        const [userResponse, settingsResponse] = await Promise.all([
-          fetch(`/api/user/${username}/`, { headers }),
-          fetch(`/api/settings/${username}/`, { headers })
-        ]);
-        
-        if (userResponse.ok) {
-          const data = await userResponse.json();
-          setUserData(data);
-        } else {
-          console.error('Failed to fetch user data');
-          navigate('/home');
+        // Fetch user data
+        const userResponse = await fetch(`/api/user/${targetUsername}/`, { headers });
+        if (!userResponse.ok) {
+          throw new Error(`HTTP error! status: ${userResponse.status}`);
+        }
+        const userData = await userResponse.json();
+        setUserData(userData);
+
+        // Fetch settings data
+        const settingsUrl = `/api/settings/${targetUsername}/`;
+        const settingsResponse = await fetch(settingsUrl, { headers });
+        if (!settingsResponse.ok) {
+          throw new Error(`HTTP error! status: ${settingsResponse.status}`);
+        }
+        const settingsData = await settingsResponse.json();
+        setSettings(settingsData);
+
+        // Fetch user's posts
+        const postsResponse = await fetch('/api/posts/user/', {
+          method: 'GET',
+          headers
+        });
+
+        if (!postsResponse.ok) {
+          throw new Error(`HTTP error! status: ${postsResponse.status}`);
         }
 
-        if (settingsResponse.ok) {
-          const data = await settingsResponse.json();
-          setSettings(data);
-        } else {
-          console.error('Failed to fetch settings data');
-        }
-
+        const postsData = await postsResponse.json();
+        setUserPosts(postsData);
       } catch (error) {
         console.error('Error fetching data:', error);
-        navigate('/home');
+        setError(`Failed to load user data. Please try again later. (Error: ${error.message})`);
       } finally {
         setLoading(false);
       }
     };
-    
+
     fetchUserDataAndSettings();
-  }, [username, navigate]);
+  }, [username, currentUser, navigate]);
 
   const handleLogout = () => {
     logout();
@@ -119,10 +122,29 @@ export default function UserPanel({ onLogout }) {
     setOpenCreatePost(false);
   };
 
-  const handlePost = (content) => {
-    // Handle the post submission
-    console.log("Posted content:", content);
-    // In a real app, you would send this to your backend
+  const handlePostCreated = (newPost) => {
+    // Add the new post to the top of the user's posts
+    setUserPosts(prevPosts => [newPost, ...prevPosts]);
+  };
+
+  const handleLike = (postId) => {
+    setUserPosts(prevPosts =>
+      prevPosts.map(post =>
+        post._id === postId
+          ? { ...post, is_liked: true, like_count: post.like_count + 1 }
+          : post
+      )
+    );
+  };
+
+  const handleUnlike = (postId) => {
+    setUserPosts(prevPosts =>
+      prevPosts.map(post =>
+        post._id === postId
+          ? { ...post, is_liked: false, like_count: post.like_count - 1 }
+          : post
+      )
+    );
   };
 
   // Don't render if not authenticated
@@ -162,7 +184,15 @@ export default function UserPanel({ onLogout }) {
                   <SearchIcon sx={{ mr: 2 }} />
                   <ListItemText primary="Search" />
                 </ListItem>
-                <ListItem button onClick={() => navigate(`/settings/${username}`)} sx={{ borderRadius: 99 }}>
+                <ListItem button onClick={() => {
+                  const targetUsername = username || currentUser;
+                  if (targetUsername && targetUsername !== 'default') {
+                    navigate(`/settings/${targetUsername}`);
+                  } else {
+                    // Redirect to login if username is not valid
+                    navigate('/login');
+                  }
+                }} sx={{ borderRadius: 99 }}>
                   <SettingsIcon sx={{ mr: 2 }} />
                   <ListItemText primary="Settings" />
                 </ListItem>
@@ -192,14 +222,14 @@ export default function UserPanel({ onLogout }) {
           <Paper square sx={{ position: 'sticky', top: 0, zIndex: 1, bgcolor: '#000', borderBottom: '1px solid #2f3336' }}>
             <Box sx={{ p: 2 }}>
               <Typography variant="h5" fontWeight="bold" gutterBottom>
-                {userData?.first_name && userData?.last_name 
-                  ? `${userData.first_name} ${userData.last_name}` 
+                {userData?.first_name && userData?.last_name
+                  ? `${userData.first_name} ${userData.last_name}`
                   : userData?.username || 'User Profile'}
               </Typography>
               <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
                 @{userData?.username || 'username'}
               </Typography>
-              
+
               {/* Profile information in header */}
               <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3 }}>
                 <Box>
@@ -210,7 +240,7 @@ export default function UserPanel({ onLogout }) {
                     {userData?.username || 'N/A'}
                   </Typography>
                 </Box>
-                
+
                 {settings?.show_email && (
                   <Box>
                     <Typography variant="body2" color="text.secondary">
@@ -221,18 +251,18 @@ export default function UserPanel({ onLogout }) {
                     </Typography>
                   </Box>
                 )}
-                
+
                 <Box>
                   <Typography variant="body2" color="text.secondary">
                     Name
                   </Typography>
                   <Typography variant="body1">
-                    {userData?.first_name && userData?.last_name 
-                      ? `${userData.first_name} ${userData.last_name}` 
+                    {userData?.first_name && userData?.last_name
+                      ? `${userData.first_name} ${userData.last_name}`
                       : 'N/A'}
                   </Typography>
                 </Box>
-                
+
                 <Box>
                   <Typography variant="body2" color="text.secondary">
                     Sex
@@ -244,56 +274,30 @@ export default function UserPanel({ onLogout }) {
               </Box>
             </Box>
           </Paper>
-          
+
+          {/* User posts section */}
           <Box>
-            {/* User posts section */}
             {userPosts.map((post) => (
-              <Box 
-                key={post.id} 
-                sx={{ 
-                  p: 2, 
-                  borderBottom: '1px solid #2f3336',
-                  cursor: 'pointer',
-                  '&:hover': {
-                    bgcolor: '#191919',
-                  },
-                }}
-              >
-                <Typography variant="body1" paragraph>
-                  {post.content}
-                </Typography>
-                <Box sx={{ display: 'flex', alignItems: 'center', color: 'text.secondary' }}>
-                  <Typography variant="caption">
-                    {post.timestamp}
-                  </Typography>
-                  <Typography variant="caption" sx={{ mx: 1 }}>
-                    ·
-                  </Typography>
-                  <Typography variant="caption">
-                    {post.likes} likes
-                  </Typography>
-                  <Typography variant="caption" sx={{ mx: 1 }}>
-                    ·
-                  </Typography>
-                  <Typography variant="caption">
-                    {post.comments} comments
-                  </Typography>
-                </Box>
-              </Box>
+              <Post
+                key={post._id}
+                post={post}
+                onLike={handleLike}
+                onUnlike={handleUnlike}
+              />
             ))}
           </Box>
         </Box>
       </Box>
-      
-      <CreatePost 
-        open={openCreatePost} 
-        onClose={handleCloseCreatePost} 
-        onPost={handlePost} 
+
+      <CreatePost
+        open={openCreatePost}
+        onClose={handleCloseCreatePost}
+        onPostCreated={handlePostCreated}
       />
 
-      <Fab 
-        color="primary" 
-        aria-label="add" 
+      <Fab
+        color="primary"
+        aria-label="add"
         onClick={handleCreatePost}
         sx={{
           position: 'fixed',
@@ -307,6 +311,17 @@ export default function UserPanel({ onLogout }) {
       >
         <AddIcon />
       </Fab>
+
+      <Snackbar
+        open={!!error}
+        autoHideDuration={6000}
+        onClose={() => setError("")}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert onClose={() => setError("")} severity="error" sx={{ width: '100%' }}>
+          {error}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 }

@@ -83,7 +83,10 @@ export default function Settings() {
         const userData = await userResponse.json();
         
         // Fetch settings data from settings API using the GET method
-        const response = await fetch(`/api/settings/${username}/`, {
+        // Use the username-specific endpoint for fetching settings
+        let settingsUrl = `/api/settings/${username}/`;
+        
+        const response = await fetch(settingsUrl, {
           method: 'GET',
           headers: {
             'Authorization': `Token ${token}`,

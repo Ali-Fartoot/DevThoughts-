@@ -147,3 +147,13 @@ MONGODB_SETTINGS = {
     'username': os.getenv('MONGO_INITDB_ROOT_USERNAME'),
     'password': os.getenv('MONGO_INITDB_ROOT_PASSWORD')
 }
+
+# REST Framework settings
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.TokenAuthentication',
+    ],
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated',
+    ],
+}

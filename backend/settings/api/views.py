@@ -4,6 +4,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from django.shortcuts import get_object_or_404
 from django.contrib.auth.models import User
+from django.http import Http404
 from .serializers import SettingsSerializer
 from settings.models import UserPreferences
 
@@ -39,6 +40,10 @@ def get_user_settings(request, username):
         serializer = SettingsSerializer(instance=user_preferences)  
         return Response(serializer.data, status=status.HTTP_200_OK)   
      
+    except Http404:
+        return Response(
+            {"error": "User not found."}, status=status.HTTP_404_NOT_FOUND
+        )
     except Exception as e: 
          return Response(
               {"error": "An error occurred while fetching settings.", "details": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR

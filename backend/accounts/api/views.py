@@ -8,7 +8,6 @@ from rest_framework.permissions import IsAuthenticated, AllowAny
 from django.shortcuts import get_object_or_404
 from django.contrib.auth.models import User
 from rest_framework.authtoken.views import ObtainAuthToken
-from accounts.models import Profile
 
 from rest_framework.permissions import AllowAny
 
@@ -51,6 +50,6 @@ class UserPanelView(APIView):
 
     def get(self, request, username):
         user = get_object_or_404(User, username=username)
-        profile = get_object_or_404(Profile, user=user)
+        profile = user.profile
         serializer = UserPanelSerializer(profile)
         return Response(serializer.data, status=status.HTTP_200_OK)

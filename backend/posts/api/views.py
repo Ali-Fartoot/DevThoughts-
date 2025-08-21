@@ -1,11 +1,13 @@
 from rest_framework import status
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework.pagination import PageNumberPagination
 from django.http import Http404
 import logging
 from posts.models import PostDocument
 from .serializer import PostCreateSerializer, PostSerializer
+from rest_framework.permissions import IsAuthenticated
+
 
 logger = logging.getLogger(__name__)
 
@@ -14,11 +16,18 @@ class CustomPagination(PageNumberPagination):
     page_size_query_param = 'page_size'
     max_page_size = 100
 
-@api_view(['POST'])
+@api_view(['GET', 'POST'])
+@permission_classes([IsAuthenticated])
 def post_list_create(request):
     """
     List all posts or create a new post
     """
+    if request.method == 'POST':
+        return create_post(request)
+    elif request.method == 'GET':
+        return get_all_posts(request)
+
+def create_post(request):
     post_doc = PostDocument()
     
     try:
@@ -28,7 +37,8 @@ def post_list_create(request):
             post_data = serializer.validated_data
             post_data.setdefault('comments', [])
             post_data.setdefault('likes', [])
-            
+            post_data['user_id'] = request.user.id
+
             created_post = post_doc.create(post_data)
             
             response_serializer = PostSerializer(created_post)
@@ -46,8 +56,62 @@ def post_list_create(request):
             status=status.HTTP_500_INTERNAL_SERVER_ERROR
         )
 
+def get_all_posts(request):
+    post_doc = PostDocument()
+    
+    try:
+        # Get all posts (you might want to add pagination here)
+        all_posts = post_doc.get_all(0, 100)  # Get first 100 posts
+        
+        # Serialize each post and add computed fields
+        serialized_posts = []
+        for post in all_posts:
+            serializer = PostSerializer(post)
+            post_data = serializer.data
+            # Add computed fields
+            post_data['username'] = request.user.username
+            post_data['is_liked'] = request.user.id in post_data.get('likes', [])
+            serialized_posts.append(post_data)
+            
+        return Response(serialized_posts, status=status.HTTP_200_OK)
+        
+    except Exception as e:
+        logger.error(f"Error fetching all posts: {e}")
+        return Response(
+            {'error': 'Failed to fetch posts'}, 
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_posts_by_user(request):
+    post_doc = PostDocument()
+    
+    try:
+        # Get posts for the authenticated user
+        user_posts = post_doc.get_posts_by_user(request.user.id, 0, 10)
+        
+        # Serialize each post and add computed fields
+        serialized_posts = []
+        for post in user_posts:
+            serializer = PostSerializer(post)
+            post_data = serializer.data
+            # Add computed fields
+            post_data['username'] = request.user.username
+            post_data['is_liked'] = request.user.id in post_data.get('likes', [])
+            serialized_posts.append(post_data)
+            
+        return Response(serialized_posts, status=status.HTTP_200_OK)
+        
+    except Exception as e:
+        logger.error(f"Error fetching user posts: {e}")
+        return Response(
+            {'error': 'Failed to fetch user posts'}, 
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
 
 @api_view(['POST'])
+@permission_classes([IsAuthenticated])
 def add_comment(request, post_id):
     """
     Add Comment to a post
@@ -82,6 +146,7 @@ def add_comment(request, post_id):
 
 
 @api_view(['GET', 'PUT', 'DELETE'])
+@permission_classes([IsAuthenticated])
 def post_detail(request, post_id):
     """
     Retrieve, update or delete a post
@@ -98,7 +163,12 @@ def post_detail(request, post_id):
     if request.method == 'GET':
         try:
             serializer = PostSerializer(post)
-            return Response(serializer.data)
+            post_detail = serializer.data
+            post_detail['username'] = request.user.username
+            post_detail['is_liked'] = request.user.id in post_detail.get('likes', [])
+        
+
+            return Response(post_detail)
         
         except Exception as e:
             logger.error(f"Error fetching post {post_id}: {e}")
@@ -126,6 +196,7 @@ def post_detail(request, post_id):
             )
 
 @api_view(['POST'])
+@permission_classes([IsAuthenticated])
 def post_like(request, post_id):
     """
     Add a like to a post
@@ -139,7 +210,7 @@ def post_like(request, post_id):
             status=status.HTTP_404_NOT_FOUND
         )
     
-    user_id = request.data.get('user_id')
+    user_id = request.user.id
     if not user_id:
         return Response(
             {'error': 'user_id is required'}, 
@@ -165,6 +236,7 @@ def post_like(request, post_id):
         )
 
 @api_view(['POST'])
+@permission_classes([IsAuthenticated])
 def post_unlike(request, post_id):
     """
     Remove a like from a post
@@ -178,7 +250,7 @@ def post_unlike(request, post_id):
             status=status.HTTP_404_NOT_FOUND
         )
     
-    user_id = request.data.get('user_id')
+    user_id = request.user.id
     if not user_id:
         return Response(
             {'error': 'user_id is required'}, 

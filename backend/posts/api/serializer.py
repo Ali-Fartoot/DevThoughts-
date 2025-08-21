@@ -8,10 +8,12 @@ class PostContentSerializer(serializers.Serializer):
         required=False,
         default=[]
     )
+    user_id = serializers.IntegerField(read_only=True)
+
 
 class PostSerializer(serializers.Serializer):
     _id = serializers.CharField(read_only=True)
-    user_id = serializers.IntegerField()
+    user_id = serializers.IntegerField(read_only=True)
     content = PostContentSerializer()
     comments = serializers.ListField(
         child=serializers.CharField(), 
@@ -26,6 +28,9 @@ class PostSerializer(serializers.Serializer):
     like_count = serializers.IntegerField(read_only=True)
     created_at = serializers.DateTimeField(read_only=True)
     deleted = serializers.BooleanField(read_only=True)
+    user_id = serializers.IntegerField(read_only=True)
+    username = serializers.CharField(read_only=True)
+    is_liked = serializers.BooleanField(read_only=True)
 
 class PostCreateSerializer(serializers.Serializer):
     content = PostContentSerializer()
