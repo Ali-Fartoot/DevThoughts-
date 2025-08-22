@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   Box,
   Typography,
@@ -10,11 +10,25 @@ import {
   Chat as ChatIcon,
   Share as ShareIcon,
 } from "@mui/icons-material";
+import { useNavigate } from 'react-router-dom';
+import CreateComment from './CreateComment';
 import { getToken } from './auth';
 
 export default function Post({ post, onLike, onUnlike, onComment, onShare }) {
+  const navigate = useNavigate();
+  const [openCreateComment, setOpenCreateComment] = useState(false);
+  
+  const handlePostClick = (e) => {
+    // Prevent navigation if clicking on action buttons
+    if (e.target.closest('button')) {
+      return;
+    }
+    // Navigate to comments page
+    navigate(`/comments/${post._id}`);
+  };
+  
   const handleLikeClick = async (e) => {
-    e.preventDefault();
+    e.stopPropagation(); // Prevent triggering the post click handler
     
     try {
       const token = getToken();
@@ -58,6 +72,21 @@ export default function Post({ post, onLike, onUnlike, onComment, onShare }) {
       alert(err.message || "Failed to like/unlike post. Please try again.");
     }
   };
+  
+  const handleCommentClick = (e) => {
+    e.stopPropagation(); // Prevent triggering the post click handler
+    // Open the create comment dialog
+    setOpenCreateComment(true);
+  };
+  
+  const handleCloseCreateComment = () => {
+    setOpenCreateComment(false);
+  };
+  
+  const handleCommentCreated = (newComment) => {
+    // Optionally refresh the comments or update the UI
+    if (onComment) onComment(post._id);
+  };
 
   return (
     <Box
@@ -66,9 +95,11 @@ export default function Post({ post, onLike, onUnlike, onComment, onShare }) {
         borderBottom: '1px solid #2f3336',
         '&:hover': {
           bgcolor: '#191919',
+          cursor: 'pointer',
         },
         textAlign: 'left',
       }}
+      onClick={handlePostClick}
     >
       <Box sx={{ display: 'flex' }}>
         <Box
@@ -107,7 +138,7 @@ export default function Post({ post, onLike, onUnlike, onComment, onShare }) {
             <IconButton 
               size="small" 
               sx={{ color: 'inherit' }}
-              onClick={() => onComment && onComment(post._id)}
+              onClick={handleCommentClick}
             >
               <ChatIcon fontSize="small" />
             </IconButton>
@@ -127,13 +158,23 @@ export default function Post({ post, onLike, onUnlike, onComment, onShare }) {
             <IconButton 
               size="small" 
               sx={{ color: 'inherit', ml: 2 }}
-              onClick={() => onShare && onShare(post._id)}
+              onClick={(e) => {
+                e.stopPropagation(); // Prevent triggering the post click handler
+                if (onShare) onShare(post._id);
+              }}
             >
               <ShareIcon fontSize="small" />
             </IconButton>
           </Box>
         </Box>
       </Box>
+      
+      <CreateComment 
+        open={openCreateComment} 
+        onClose={handleCloseCreateComment} 
+        onCommentCreated={handleCommentCreated} 
+        post_id={post._id}
+      />
     </Box>
   );
 }

@@ -6,7 +6,10 @@ django-cors-headers
 djangorestframework
 django_extensions
 
+minio
+
+pymongo
+
 python-dotenv
 pytest
 requests
-pymongo

@@ -33,6 +33,19 @@ services:
     volumes:
       - mongodb_data:/data/db
 
+  minio:
+    image: minio/minio
+    container_name: minio
+    ports:
+    - '9000:9000'
+    - '9001:9001'
+    volumes:
+    - 'minio-data:/data'
+    env_file:
+      - backend.env
+    command: server --console-address ":9001" /data
+
 volumes:
   db_data:
   mongodb_data:
+  minio-data:

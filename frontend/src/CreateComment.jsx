@@ -18,14 +18,14 @@ import {
 import { useNavigate } from "react-router-dom";
 import { getToken } from './auth';
 
-export default function CreatePost({ open, onClose, onPostCreated }) {
+export default function CreateComment({ open, onClose, onCommentCreated, post_id }) {
   const [content, setContent] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
   const navigate = useNavigate();
 
-  const handlePost = async () => {
+  const handleComment = async () => {
     if (!content.trim() || content.length > 280) return;
     
     setLoading(true);
@@ -37,7 +37,7 @@ export default function CreatePost({ open, onClose, onPostCreated }) {
         throw new Error("User not authenticated");
       }
 
-      const response = await fetch('http://localhost:8000/api/posts/', {
+      const response = await fetch(`http://localhost:8000/api/posts/${post_id}/comment/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -58,16 +58,16 @@ export default function CreatePost({ open, onClose, onPostCreated }) {
       if (response.ok) {
         setSuccess(true);
         setContent("");
-        if (onPostCreated) onPostCreated(data);
+        if (onCommentCreated) onCommentCreated(data);
         onClose();
-        // Refresh the page to show the new post
+        // Refresh the page to show the new comment
         window.location.reload();
       } else {
-        throw new Error(data.detail || "Failed to create post");
+        throw new Error(data.detail || "Failed to create comment");
       }
     } catch (err) {
-      console.error("Error creating post:", err);
-      setError(err.message || "Failed to create post. Please try again.");
+      console.error("Error creating comment:", err);
+      setError(err.message || "Failed to create comment. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -108,7 +108,7 @@ export default function CreatePost({ open, onClose, onPostCreated }) {
           }}
         >
           <Typography variant="h6" fontWeight="bold">
-            Create Post
+            Create Comment
           </Typography>
           <IconButton 
             onClick={onClose} 
@@ -125,7 +125,7 @@ export default function CreatePost({ open, onClose, onPostCreated }) {
               multiline
               rows={6}
               fullWidth
-              placeholder="What's happening?"
+              placeholder="What are your thoughts?"
               value={content}
               onChange={(e) => setContent(e.target.value)}
               variant="outlined"
@@ -164,7 +164,7 @@ export default function CreatePost({ open, onClose, onPostCreated }) {
             <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
               <Button 
                 variant="contained" 
-                onClick={handlePost}
+                onClick={handleComment}
                 disabled={!content.trim() || isOverLimit || loading}
                 sx={{ 
                   borderRadius: 99,
@@ -181,7 +181,7 @@ export default function CreatePost({ open, onClose, onPostCreated }) {
                   }
                 }}
               >
-                {loading ? "Posting..." : "Post"}
+                {loading ? "Commenting..." : "Comment"}
               </Button>
             </Box>
           </Box>
@@ -206,7 +206,7 @@ export default function CreatePost({ open, onClose, onPostCreated }) {
         anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
       >
         <Alert onClose={() => setSuccess(false)} severity="success" sx={{ width: '100%' }}>
-          Post created successfully!
+          Comment created successfully!
         </Alert>
       </Snackbar>
     </>

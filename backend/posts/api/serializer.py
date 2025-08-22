@@ -44,3 +44,4 @@ class PostCreateSerializer(serializers.Serializer):
         required=False,
         default=[]
     )
+    is_comment = serializers.BooleanField(default=False)

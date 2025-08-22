@@ -6,6 +6,7 @@ import UserPanel from './UserPanel'
 import Settings from './Settings'
 import CreatePost from './CreatePost'
 import Search from './Search'
+import Comments from './Comments'
 import { ThemeProvider, createTheme } from '@mui/material/styles'
 import CssBaseline from '@mui/material/CssBaseline'
 import { Routes, Route, Navigate } from 'react-router-dom'
@@ -74,6 +75,7 @@ function App() {
         <Route path="/settings/:username" element={isAuthenticated ? <Settings /> : <Navigate to="/login" />} />
         <Route path="/create-post" element={isAuthenticated ? <CreatePost open={true} /> : <Navigate to="/login" />} />
         <Route path="/search" element={<Search />} />
+        <Route path="/comments/:post_id" element={isAuthenticated ? <Comments /> : <Navigate to="/login" />} />
         <Route path="/" element={<Navigate replace to="/home" />} />
       </Routes>
     </ThemeProvider>

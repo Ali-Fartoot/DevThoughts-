@@ -14,6 +14,8 @@ import {
   Fab,
   Snackbar,
   Alert,
+  Pagination,
+  PaginationItem,
 } from "@mui/material";
 import {
   Home as HomeIcon,
@@ -34,6 +36,8 @@ export default function UserPanel({ onLogout }) {
   const [openCreatePost, setOpenCreatePost] = useState(false);
   const [userPosts, setUserPosts] = useState([]);
   const [error, setError] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
   const navigate = useNavigate();
   const { username } = useParams();
 
@@ -85,8 +89,8 @@ export default function UserPanel({ onLogout }) {
         const settingsData = await settingsResponse.json();
         setSettings(settingsData);
 
-        // Fetch user's posts
-        const postsResponse = await fetch('/api/posts/user/', {
+        // Fetch user's posts with pagination
+        const postsResponse = await fetch(`/api/posts/user/?page=${currentPage}&page_size=7`, {
           method: 'GET',
           headers
         });
@@ -96,7 +100,12 @@ export default function UserPanel({ onLogout }) {
         }
 
         const postsData = await postsResponse.json();
-        setUserPosts(postsData);
+        setUserPosts(postsData.results || postsData); // Handle both paginated and non-paginated responses
+        
+        if (postsData.count) {
+          // Calculate total pages based on count (7 items per page)
+          setTotalPages(Math.ceil(postsData.count / 7));
+        }
       } catch (error) {
         console.error('Error fetching data:', error);
         setError(`Failed to load user data. Please try again later. (Error: ${error.message})`);
@@ -106,7 +115,11 @@ export default function UserPanel({ onLogout }) {
     };
 
     fetchUserDataAndSettings();
-  }, [username, currentUser, navigate]);
+  }, [username, currentUser, navigate, currentPage]);
+
+  const handlePageChange = (event, page) => {
+    setCurrentPage(page);
+  };
 
   const handleLogout = () => {
     logout();
@@ -125,6 +138,8 @@ export default function UserPanel({ onLogout }) {
   const handlePostCreated = (newPost) => {
     // Add the new post to the top of the user's posts
     setUserPosts(prevPosts => [newPost, ...prevPosts]);
+    // Refresh the page to ensure UI consistency
+    window.location.reload();
   };
 
   const handleLike = (postId) => {
@@ -285,6 +300,31 @@ export default function UserPanel({ onLogout }) {
                 onUnlike={handleUnlike}
               />
             ))}
+            {/* Pagination Controls */}
+            {totalPages > 1 && (
+              <Box sx={{ display: 'flex', justifyContent: 'center', p: 2 }}>
+                <Pagination
+                  count={totalPages}
+                  page={currentPage}
+                  onChange={handlePageChange}
+                  color="primary"
+                  siblingCount={1}
+                  boundaryCount={1}
+                  renderItem={(item) => (
+                    <PaginationItem
+                      {...item}
+                      sx={{
+                        color: '#fff',
+                        '&.Mui-selected': {
+                          backgroundColor: '#1d9bf0',
+                          color: '#fff',
+                        },
+                      }}
+                    />
+                  )}
+                />
+              </Box>
+            )}
           </Box>
         </Box>
       </Box>

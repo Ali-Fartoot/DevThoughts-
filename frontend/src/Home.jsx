@@ -18,6 +18,8 @@ import {
   TextField,
   Typography,
   CircularProgress,
+  Pagination,
+  PaginationItem,
 } from "@mui/material";
 import {
   Add as AddIcon,
@@ -38,6 +40,8 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [openCreatePost, setOpenCreatePost] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
   const navigate = useNavigate();
 
   // Mock data for suggested follows
@@ -48,10 +52,10 @@ export default function Home() {
   // ];
 
   useEffect(() => {
-    fetchPosts();
-  }, []);
+    fetchPosts(currentPage);
+  }, [currentPage]);
 
-  const fetchPosts = async () => {
+  const fetchPosts = async (page = 1) => {
     try {
       setLoading(true);
       const token = getToken();
@@ -93,8 +97,8 @@ export default function Home() {
         return;
       }
 
-      // Fetch real posts from backend
-      const response = await fetch('http://localhost:8000/api/posts/', {
+      // Fetch real posts from backend with pagination
+      const response = await fetch(`http://localhost:8000/api/posts/?page=${page}&page_size=10`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -104,7 +108,11 @@ export default function Home() {
 
       if (response.ok) {
         const data = await response.json();
-        setTweets(data);
+        setTweets(data.results || data); // Handle both paginated and non-paginated responses
+        if (data.count) {
+          // Calculate total pages based on count (10 items per page)
+          setTotalPages(Math.ceil(data.count / 10));
+        }
       } else {
         throw new Error("Failed to fetch posts");
       }
@@ -114,6 +122,10 @@ export default function Home() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handlePageChange = (event, page) => {
+    setCurrentPage(page);
   };
 
   const handleLogin = () => {
@@ -146,8 +158,10 @@ export default function Home() {
   const handlePostCreated = (newPost) => {
     // Add the new post to the top of the list
     setTweets(prevTweets => [newPost, ...prevTweets]);
-    // Refresh all posts to show the new one
-    fetchPosts();
+    // Refresh current page to show the new one
+    fetchPosts(currentPage);
+    // Refresh the page to ensure UI consistency
+    window.location.reload();
   };
 
   const handleLike = (postId) => {
@@ -286,16 +300,43 @@ export default function Home() {
             <Typography color="error">{error}</Typography>
           </Box>
         ) : (
-          <Box>
-            {tweets.map((tweet) => (
-              <Post
-                key={tweet._id}
-                post={tweet}
-                onLike={handleLike}
-                onUnlike={handleUnlike}
-              />
-            ))}
-          </Box>
+          <>
+            <Box>
+              {tweets.map((tweet) => (
+                <Post
+                  key={tweet._id}
+                  post={tweet}
+                  onLike={handleLike}
+                  onUnlike={handleUnlike}
+                />
+              ))}
+            </Box>
+            {/* Pagination Controls */}
+            {totalPages > 1 && (
+              <Box sx={{ display: 'flex', justifyContent: 'center', p: 2 }}>
+                <Pagination
+                  count={totalPages}
+                  page={currentPage}
+                  onChange={handlePageChange}
+                  color="primary"
+                  siblingCount={1}
+                  boundaryCount={1}
+                  renderItem={(item) => (
+                    <PaginationItem
+                      {...item}
+                      sx={{
+                        color: '#fff',
+                        '&.Mui-selected': {
+                          backgroundColor: '#1d9bf0',
+                          color: '#fff',
+                        },
+                      }}
+                    />
+                  )}
+                />
+              </Box>
+            )}
+          </>
         )}
       </Box>
       
