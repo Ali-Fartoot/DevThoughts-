@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   Box,
   Button,
@@ -16,7 +16,13 @@ import {
   Tab,
   Alert,
   Snackbar,
+  Paper,
+  IconButton,
 } from "@mui/material";
+import {
+  PhotoCamera as PhotoCameraIcon,
+  Delete as DeleteIcon,
+} from "@mui/icons-material";
 import { useNavigate, useParams } from "react-router-dom";
 import { getToken } from './auth';
 import { fetchUserSettings, updateUserSettings, updateUserProfile } from './api';
@@ -53,6 +59,12 @@ export default function Settings() {
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
   const [fieldErrors, setFieldErrors] = useState({}); // State for field-specific errors
+  
+  // Profile picture state
+  const [profilePicture, setProfilePicture] = useState(null);
+  const [profilePicturePreview, setProfilePicturePreview] = useState(null);
+  const [existingProfilePicture, setExistingProfilePicture] = useState(null);
+  const fileInputRef = useRef(null);
 
   // Load user settings when component mounts
   useEffect(() => {
@@ -117,6 +129,9 @@ export default function Settings() {
           showEmail: settingsData.show_email || false,
           profileVisibility: settingsData.profile_visibility || "public",
         });
+        
+        // Load existing profile picture
+        loadProfilePicture();
       } catch (err) {
         setError("Failed to load settings: " + err.message);
         console.error("Error loading user settings:", err);
@@ -126,7 +141,45 @@ export default function Settings() {
     };
     
     loadUserSettings();
-  }, [username]);
+    
+    // Cleanup object URLs when component unmounts
+    return () => {
+      if (profilePicturePreview) {
+        URL.revokeObjectURL(profilePicturePreview);
+      }
+      if (existingProfilePicture) {
+        URL.revokeObjectURL(existingProfilePicture);
+      }
+    };
+  }, [username]); // Removed profilePicturePreview and existingProfilePicture from dependency array
+  
+  const loadProfilePicture = async () => {
+    try {
+      const token = getToken();
+      if (!token) {
+        throw new Error("User not authenticated");
+      }
+      
+      // For current user, don't pass ID parameter - backend will use request.user.id
+      const response = await fetch('http://localhost:8000/api/accounts/profile/', {
+        method: 'GET',
+        headers: {
+          'Authorization': `Token ${token}`,
+        },
+      });
+      
+      if (response.ok && response.headers.get('content-type')?.startsWith('image/')) {
+        const imageUrl = URL.createObjectURL(await response.blob());
+        setExistingProfilePicture(imageUrl);
+      } else if (response.status === 404) {
+        // No profile picture found - this is normal, clear any existing picture
+        setExistingProfilePicture(null);
+      }
+    } catch (err) {
+      console.log("Error fetching profile picture for user");
+      setExistingProfilePicture(null);
+    }
+  };
 
   const handleProfileChange = (e) => {
     const { name, value } = e.target;
@@ -210,6 +263,86 @@ export default function Settings() {
   const handleCloseSnackbar = () => {
     setSuccess(false);
     setError(null);
+  };
+  
+  const handleProfilePictureChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setProfilePicture(file);
+      setProfilePicturePreview(URL.createObjectURL(file));
+    }
+  };
+  
+  const handleUploadProfilePicture = async () => {
+    if (!profilePicture) return;
+    
+    try {
+      setLoading(true);
+      const token = getToken();
+      if (!token) {
+        throw new Error("User not authenticated");
+      }
+      
+      const formData = new FormData();
+      formData.append('file', profilePicture);
+      
+      const response = await fetch('http://localhost:8000/api/accounts/profile/put/', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Token ${token}`,
+        },
+        body: formData,
+      });
+      
+      if (response.ok) {
+        setSuccess(true);
+        setProfilePicture(null);
+        setProfilePicturePreview(null);
+        // Reload the profile picture
+        loadProfilePicture();
+      } else {
+        throw new Error("Failed to upload profile picture");
+      }
+    } catch (err) {
+      setError("Failed to upload profile picture: " + err.message);
+      console.error("Error uploading profile picture:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+  
+  const handleDeleteProfilePicture = async () => {
+    try {
+      setLoading(true);
+      const token = getToken();
+      if (!token) {
+        throw new Error("User not authenticated");
+      }
+      
+      const response = await fetch('http://localhost:8000/api/accounts/profile/put/', {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Token ${token}`,
+        },
+      });
+      
+      if (response.ok) {
+        setSuccess(true);
+        setExistingProfilePicture(null);
+        setProfilePicturePreview(null);
+      } else {
+        throw new Error("Failed to delete profile picture");
+      }
+    } catch (err) {
+      setError("Failed to delete profile picture: " + err.message);
+      console.error("Error deleting profile picture:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+  
+  const triggerFileInput = () => {
+    fileInputRef.current.click();
   };
 
   const tabLabels = {
@@ -371,6 +504,100 @@ export default function Settings() {
                         <MenuItem value="other">Other</MenuItem>
                       </Select>
                     </FormControl>
+                    
+                    {/* Profile Picture Section */}
+                    <Box sx={{ mt: 3 }}>
+                      <Typography variant="h6" gutterBottom>Profile Picture</Typography>
+                      
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 3 }}>
+                        {/* Profile Picture Preview */}
+                        <Paper 
+                          sx={{ 
+                            width: 100, 
+                            height: 100, 
+                            borderRadius: '50%', 
+                            overflow: 'hidden',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            bgcolor: '#1e1e2e'
+                          }}
+                        >
+                          {profilePicturePreview ? (
+                            <img 
+                              src={profilePicturePreview} 
+                              alt="Preview" 
+                              style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                            />
+                          ) : existingProfilePicture ? (
+                            <img 
+                              src={existingProfilePicture} 
+                              alt="Profile" 
+                              style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                            />
+                          ) : (
+                            <Typography color="text.secondary">No Image</Typography>
+                          )}
+                        </Paper>
+                        
+                        <Box>
+                          <input
+                            ref={fileInputRef}
+                            type="file"
+                            accept="image/*"
+                            onChange={handleProfilePictureChange}
+                            style={{ display: 'none' }}
+                          />
+                          
+                          <Button
+                            variant="outlined"
+                            startIcon={<PhotoCameraIcon />}
+                            onClick={triggerFileInput}
+                            sx={{
+                              borderColor: '#1d9bf0',
+                              color: '#1d9bf0',
+                              '&:hover': {
+                                borderColor: '#1a8cd8',
+                              },
+                              mr: 2
+                            }}
+                          >
+                            Upload Picture
+                          </Button>
+                          
+                          {(profilePicturePreview || existingProfilePicture) && (
+                            <IconButton
+                              onClick={handleDeleteProfilePicture}
+                              sx={{ 
+                                color: '#ff5252',
+                                '&:hover': {
+                                  bgcolor: 'rgba(255, 82, 82, 0.1)'
+                                }
+                              }}
+                            >
+                              <DeleteIcon />
+                            </IconButton>
+                          )}
+                          
+                          {profilePicturePreview && (
+                            <Box sx={{ mt: 2 }}>
+                              <Button
+                                variant="contained"
+                                onClick={handleUploadProfilePicture}
+                                sx={{
+                                  bgcolor: '#1d9bf0',
+                                  '&:hover': {
+                                    bgcolor: '#1a8cd8',
+                                  }
+                                }}
+                              >
+                                Save Picture
+                              </Button>
+                            </Box>
+                          )}
+                        </Box>
+                      </Box>
+                    </Box>
                   </Box>
                 </Box>
               )}

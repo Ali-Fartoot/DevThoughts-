@@ -42,6 +42,7 @@ export default function Home() {
   const [openCreatePost, setOpenCreatePost] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [profilePicture, setProfilePicture] = useState(null);
   const navigate = useNavigate();
 
   // Mock data for suggested follows
@@ -51,6 +52,45 @@ export default function Home() {
   //   { id: 3, name: "Material UI", username: "mui", avatar: "M" }
   // ];
 
+  useEffect(() => {
+    const fetchProfilePicture = async () => {
+      try {
+        const token = getToken();
+        if (!token) return;
+        
+        // For current user, don't pass ID parameter - backend will use request.user.id
+        const response = await fetch('http://localhost:8000/api/accounts/profile/', {
+          method: 'GET',
+          headers: {
+            'Authorization': `Token ${token}`,
+          },
+        });
+        
+        if (response.ok && response.headers.get('content-type')?.startsWith('image/')) {
+          const imageUrl = URL.createObjectURL(await response.blob());
+          setProfilePicture(imageUrl);
+        } else if (response.status === 404) {
+          // No profile picture found - this is normal, clear any existing picture
+          setProfilePicture(null);
+        }
+      } catch (err) {
+        console.log("Error fetching profile picture for user");
+        setProfilePicture(null);
+      }
+    };
+    
+    if (isAuthenticated()) {
+      fetchProfilePicture();
+    }
+    
+    // Cleanup object URL when component unmounts
+    return () => {
+      if (profilePicture) {
+        URL.revokeObjectURL(profilePicture);
+      }
+    };
+  }, []); // Removed profilePicture from dependency array
+  
   useEffect(() => {
     fetchPosts(currentPage);
   }, [currentPage]);
@@ -237,10 +277,39 @@ export default function Home() {
                   bgcolor: '#1d9bf0',
                   '&:hover': {
                     bgcolor: '#1a8cd8',
-                  }
+                  },
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 1,
+                  pl: 1.5,
+                  pr: 2,
                 }}
                 onClick={handleProfile}
               >
+                <Box
+                  sx={{
+                    width: 24,
+                    height: 24,
+                    borderRadius: '50%',
+                    bgcolor: 'grey.800',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    overflow: 'hidden',
+                  }}
+                >
+                  {profilePicture ? (
+                    <img 
+                      src={profilePicture} 
+                      alt="Profile" 
+                      style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                    />
+                  ) : (
+                    <Typography variant="caption" fontWeight="bold">
+                      {localStorage.getItem('username')?.charAt(0)?.toUpperCase() || 'U'}
+                    </Typography>
+                  )}
+                </Box>
                 Profile
               </Button>
               <Button

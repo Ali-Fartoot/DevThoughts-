@@ -1,6 +1,6 @@
 from typing import Dict, List
 from bson import ObjectId
-from mongo import get_mongo_client
+from mongo_api import get_mongo_client
 
 class BaseDocument:
     def __init__(self, collection_name: str):

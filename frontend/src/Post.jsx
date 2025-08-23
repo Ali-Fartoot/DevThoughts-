@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Box,
   Typography,
@@ -17,6 +17,76 @@ import { getToken } from './auth';
 export default function Post({ post, onLike, onUnlike, onComment, onShare }) {
   const navigate = useNavigate();
   const [openCreateComment, setOpenCreateComment] = useState(false);
+  const [profilePicture, setProfilePicture] = useState(null);
+  
+  useEffect(() => {
+    const fetchProfilePicture = async () => {
+      try {
+        const token = getToken();
+        if (!token) return;
+        
+        const currentUsername = localStorage.getItem('username');
+        let userId;
+        
+        // If it's the current user, use their ID directly
+        if (post.username === currentUsername) {
+          userId = null; // Will use default in backend
+        } else {
+          // For other users, get their ID first
+          const userIdResponse = await fetch(`http://localhost:8000/api/accounts/user-id/?username=${post.username}`, {
+            method: 'GET',
+            headers: {
+              'Authorization': `Token ${token}`,
+            },
+          });
+          
+          if (!userIdResponse.ok) {
+            console.log("Failed to get user ID");
+            setProfilePicture(null);
+            return;
+          }
+          
+          const userIdData = await userIdResponse.json();
+          userId = userIdData.user_id;
+        }
+        
+        // Fetch the profile picture
+        let url = 'http://localhost:8000/api/accounts/profile/';
+        if (userId) {
+          url += `?id=${userId}`;
+        }
+        
+        const response = await fetch(url, {
+          method: 'GET',
+          headers: {
+            'Authorization': `Token ${token}`,
+          },
+        });
+        
+        if (response.ok && response.headers.get('content-type')?.startsWith('image/')) {
+          const imageUrl = URL.createObjectURL(await response.blob());
+          setProfilePicture(imageUrl);
+        } else if (response.status === 404) {
+          // No profile picture found - this is normal, clear any existing picture
+          setProfilePicture(null);
+        }
+      } catch (err) {
+        console.log("Error fetching profile picture for user");
+        setProfilePicture(null);
+      }
+    };
+    
+    if (post.username) {
+      fetchProfilePicture();
+    }
+    
+    // Cleanup object URL when component unmounts
+    return () => {
+      if (profilePicture) {
+        URL.revokeObjectURL(profilePicture);
+      }
+    };
+  }, [post.username]); // Removed profilePicture from dependency array
   
   const handlePostClick = (e) => {
     // Prevent navigation if clicking on action buttons
@@ -113,11 +183,20 @@ export default function Post({ post, onLike, onUnlike, onComment, onShare }) {
             justifyContent: 'center',
             mr: 2,
             flexShrink: 0,
+            overflow: 'hidden',
           }}
         >
-          <Typography fontWeight="bold">
-            {post.username?.charAt(0)?.toUpperCase() || 'U'}
-          </Typography>
+          {profilePicture ? (
+            <img 
+              src={profilePicture} 
+              alt="Profile" 
+              style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+            />
+          ) : (
+            <Typography fontWeight="bold">
+              {post.username?.charAt(0)?.toUpperCase() || 'U'}
+            </Typography>
+          )}
         </Box>
         <Box sx={{ flex: 1 }}>
           <Box sx={{ display: 'flex', alignItems: 'center' }}>

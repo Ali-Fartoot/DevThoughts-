@@ -38,10 +38,81 @@ export default function UserPanel({ onLogout }) {
   const [error, setError] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [profilePicture, setProfilePicture] = useState(null);
   const navigate = useNavigate();
   const { username } = useParams();
 
   const currentUser = localStorage.getItem('username') || null;
+  
+  useEffect(() => {
+    const fetchProfilePicture = async () => {
+      try {
+        const token = getToken();
+        if (!token) return;
+        
+        const targetUsername = username || currentUser;
+        const currentUsername = localStorage.getItem('username');
+        let userId;
+        
+        // If it's the current user, use their ID directly
+        if (targetUsername === currentUsername) {
+          userId = null; // Will use default in backend
+        } else {
+          // For other users, get their ID first
+          const userIdResponse = await fetch(`http://localhost:8000/api/accounts/user-id/?username=${targetUsername}`, {
+            method: 'GET',
+            headers: {
+              'Authorization': `Token ${token}`,
+            },
+          });
+          
+          if (!userIdResponse.ok) {
+            console.log("Failed to get user ID");
+            setProfilePicture(null);
+            return;
+          }
+          
+          const userIdData = await userIdResponse.json();
+          userId = userIdData.user_id;
+        }
+        
+        // Fetch the profile picture
+        let url = 'http://localhost:8000/api/accounts/profile/';
+        if (userId) {
+          url += `?id=${userId}`;
+        }
+        
+        const response = await fetch(url, {
+          method: 'GET',
+          headers: {
+            'Authorization': `Token ${token}`,
+          },
+        });
+        
+        if (response.ok && response.headers.get('content-type')?.startsWith('image/')) {
+          const imageUrl = URL.createObjectURL(await response.blob());
+          setProfilePicture(imageUrl);
+        } else if (response.status === 404) {
+          // No profile picture found - this is normal, clear any existing picture
+          setProfilePicture(null);
+        }
+      } catch (err) {
+        console.log("Error fetching profile picture for user");
+        setProfilePicture(null);
+      }
+    };
+    
+    if (isAuthenticated()) {
+      fetchProfilePicture();
+    }
+    
+    // Cleanup object URL when component unmounts
+    return () => {
+      if (profilePicture) {
+        URL.revokeObjectURL(profilePicture);
+      }
+    };
+  }, [username, currentUser]); // Removed profilePicture from dependency array
 
   useEffect(() => {
     if (!isAuthenticated()) {
@@ -236,14 +307,42 @@ export default function UserPanel({ onLogout }) {
           {/* Profile header */}
           <Paper square sx={{ position: 'sticky', top: 0, zIndex: 1, bgcolor: '#000', borderBottom: '1px solid #2f3336' }}>
             <Box sx={{ p: 2 }}>
-              <Typography variant="h5" fontWeight="bold" gutterBottom>
-                {userData?.first_name && userData?.last_name
-                  ? `${userData.first_name} ${userData.last_name}`
-                  : userData?.username || 'User Profile'}
-              </Typography>
-              <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                @{userData?.username || 'username'}
-              </Typography>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
+                <Box
+                  sx={{
+                    width: 60,
+                    height: 60,
+                    borderRadius: '50%',
+                    bgcolor: 'grey.800',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    overflow: 'hidden',
+                  }}
+                >
+                  {profilePicture ? (
+                    <img 
+                      src={profilePicture} 
+                      alt="Profile" 
+                      style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                    />
+                  ) : (
+                    <Typography variant="h4" fontWeight="bold">
+                      {userData?.username?.charAt(0)?.toUpperCase() || 'U'}
+                    </Typography>
+                  )}
+                </Box>
+                <Box>
+                  <Typography variant="h5" fontWeight="bold">
+                    {userData?.first_name && userData?.last_name
+                      ? `${userData.first_name} ${userData.last_name}`
+                      : userData?.username || 'User Profile'}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    @{userData?.username || 'username'}
+                  </Typography>
+                </Box>
+              </Box>
 
               {/* Profile information in header */}
               <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3 }}>

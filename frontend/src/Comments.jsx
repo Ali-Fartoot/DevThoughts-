@@ -30,6 +30,7 @@ export default function Comments() {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [openCreateComment, setOpenCreateComment] = useState(false);
+  const [profilePicture, setProfilePicture] = useState(null);
   const navigate = useNavigate();
   const location = useLocation();
   const { post_id } = useParams();
@@ -42,6 +43,45 @@ export default function Comments() {
     
     fetchPostAndComments(currentPage);
   }, [post_id, currentPage]);
+
+  useEffect(() => {
+    const fetchProfilePicture = async () => {
+      try {
+        const token = getToken();
+        if (!token) return;
+        
+        // For current user, don't pass ID parameter - backend will use request.user.id
+        const response = await fetch('http://localhost:8000/api/accounts/profile/', {
+          method: 'GET',
+          headers: {
+            'Authorization': `Token ${token}`,
+          },
+        });
+        
+        if (response.ok && response.headers.get('content-type')?.startsWith('image/')) {
+          const imageUrl = URL.createObjectURL(await response.blob());
+          setProfilePicture(imageUrl);
+        } else if (response.status === 404) {
+          // No profile picture found - this is normal, clear any existing picture
+          setProfilePicture(null);
+        }
+      } catch (err) {
+        console.log("Error fetching profile picture for user");
+        setProfilePicture(null);
+      }
+    };
+    
+    if (isAuthenticated()) {
+      fetchProfilePicture();
+    }
+    
+    // Cleanup object URL when component unmounts
+    return () => {
+      if (profilePicture) {
+        URL.revokeObjectURL(profilePicture);
+      }
+    };
+  }, []); // Removed profilePicture from dependency array
 
   const fetchPostAndComments = async (page = 1) => {
     try {
@@ -107,6 +147,17 @@ export default function Comments() {
   const handleHome = () => {
     // Navigate to home page
     navigate('/home');
+  };
+  
+  const handleProfile = () => {
+    // Get the username from localStorage
+    const username = localStorage.getItem('username');
+    if (username) {
+      navigate(`/user/${username}`);
+    } else {
+      // Redirect to login if username is not found
+      navigate('/login');
+    }
   };
 
   const handleCreateComment = () => {
@@ -202,6 +253,46 @@ export default function Comments() {
             >
               Home
             </Button>
+            {isAuthenticated() && (
+              <Button
+                onClick={handleProfile}
+                sx={{
+                  color: '#fff',
+                  mb: 2,
+                  justifyContent: 'flex-start',
+                  textTransform: 'none',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 1,
+                }}
+              >
+                <Box
+                  sx={{
+                    width: 24,
+                    height: 24,
+                    borderRadius: '50%',
+                    bgcolor: 'grey.800',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    overflow: 'hidden',
+                  }}
+                >
+                  {profilePicture ? (
+                    <img 
+                      src={profilePicture} 
+                      alt="Profile" 
+                      style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                    />
+                  ) : (
+                    <Typography variant="caption" fontWeight="bold">
+                      {localStorage.getItem('username')?.charAt(0)?.toUpperCase() || 'U'}
+                    </Typography>
+                  )}
+                </Box>
+                Profile
+              </Button>
+            )}
           </Box>
         </Box>
 
