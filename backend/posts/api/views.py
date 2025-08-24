@@ -190,7 +190,8 @@ def post_detail(request, post_id):
         try:
             serializer = PostSerializer(post)
             post_detail = serializer.data
-            post_detail['username'] = request.user.username
+            username = User.objects.filter(id=post_detail['user_id']).values_list('username', flat=True).first()
+            post_detail['username'] = username
             post_detail['is_liked'] = request.user.id in post_detail.get('likes', [])
         
 
