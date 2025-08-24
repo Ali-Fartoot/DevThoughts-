@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import {
   Box,
   Button,
@@ -11,22 +11,39 @@ import {
   Divider,
   Snackbar,
   Alert,
+  Chip,
 } from "@mui/material";
 import {
   Close as CloseIcon,
+  AddPhotoAlternate as AddPhotoIcon,
 } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
 import { getToken } from './auth';
 
 export default function CreateComment({ open, onClose, onCommentCreated, post_id }) {
   const [content, setContent] = useState("");
+  const [images, setImages] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
+  const fileInputRef = useRef(null);
   const navigate = useNavigate();
 
+  const handleImageChange = (e) => {
+    const files = Array.from(e.target.files);
+    setImages(prev => [...prev, ...files].slice(0, 4)); // Max 4 images
+  };
+
+  const removeImage = (index) => {
+    setImages(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const triggerFileInput = () => {
+    fileInputRef.current.click();
+  };
+
   const handleComment = async () => {
-    if (!content.trim() || content.length > 280) return;
+    if ((!content.trim() || content.length > 280) && images.length === 0) return;
     
     setLoading(true);
     setError("");
@@ -37,20 +54,40 @@ export default function CreateComment({ open, onClose, onCommentCreated, post_id
         throw new Error("User not authenticated");
       }
 
+      const formData = new FormData();
+      
+      // Add text content as a proper JSON object
+      const contentObj = {
+        text: content,
+        medias: []
+      };
+      
+      // Add content as a Blob to ensure proper JSON formatting
+      formData.append('content', new Blob([JSON.stringify(contentObj)], {
+        type: 'application/json'
+      }));
+      
+      // Add arrays for comments and likes
+      formData.append('comments', new Blob([JSON.stringify([])], {
+        type: 'application/json'
+      }));
+      formData.append('likes', new Blob([JSON.stringify([])], {
+        type: 'application/json'
+      }));
+      
+      // Add image files if any
+      if (images.length > 0) {
+        images.forEach(image => {
+          formData.append('attachments', image);
+        });
+      }
+
       const response = await fetch(`http://localhost:8000/api/posts/${post_id}/comment/`, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
           'Authorization': `Token ${token}`,
         },
-        body: JSON.stringify({
-          content: {
-            text: content,
-            media: []
-          },
-          comments: [],
-          likes: []
-        }),
+        body: formData,
       });
 
       const data = await response.json();
@@ -58,6 +95,7 @@ export default function CreateComment({ open, onClose, onCommentCreated, post_id
       if (response.ok) {
         setSuccess(true);
         setContent("");
+        setImages([]);
         if (onCommentCreated) onCommentCreated(data);
         onClose();
         // Refresh the page to show the new comment
@@ -156,16 +194,51 @@ export default function CreateComment({ open, onClose, onCommentCreated, post_id
                 </Typography>
               </Box>
             )}
+            
+            {/* Image preview chips */}
+            {images.length > 0 && (
+              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 2 }}>
+                {images.map((image, index) => (
+                  <Chip
+                    key={index}
+                    label={image.name}
+                    onDelete={() => removeImage(index)}
+                    sx={{ bgcolor: '#1d9bf0', color: 'white' }}
+                  />
+                ))}
+              </Box>
+            )}
           </Box>
           
           <Divider sx={{ borderColor: '#2f3336' }} />
           
           <Box sx={{ p: 2 }}>
-            <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+              <IconButton 
+                onClick={triggerFileInput}
+                sx={{ 
+                  color: '#1d9bf0',
+                  '&:hover': {
+                    bgcolor: 'rgba(29, 155, 240, 0.1)',
+                  }
+                }}
+              >
+                <AddPhotoIcon />
+              </IconButton>
+              
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                multiple
+                onChange={handleImageChange}
+                style={{ display: 'none' }}
+              />
+              
               <Button 
                 variant="contained" 
                 onClick={handleComment}
-                disabled={!content.trim() || isOverLimit || loading}
+                disabled={(!content.trim() && images.length === 0) || isOverLimit || loading}
                 sx={{ 
                   borderRadius: 99,
                   fontWeight: 'bold',

@@ -4,6 +4,8 @@ import {
   Typography,
   IconButton,
   Button,
+  ImageList,
+  ImageListItem,
 } from "@mui/material";
 import {
   Favorite as FavoriteIcon,
@@ -158,6 +160,27 @@ export default function Post({ post, onLike, onUnlike, onComment, onShare }) {
     if (onComment) onComment(post._id);
   };
 
+  // Function to determine image layout based on number of images
+  const getImageLayout = (imageCount) => {
+    if (imageCount === 1) return { rows: 1, cols: 1 };
+    if (imageCount === 2) return { rows: 1, cols: 2 };
+    if (imageCount === 3) return { rows: 2, cols: 2 };
+    if (imageCount >= 4) return { rows: 2, cols: 2 };
+    return { rows: 1, cols: 1 };
+  };
+
+  // Function to get column span for images
+  const getColSpan = (index, total) => {
+    if (total === 3 && index === 0) return 2;
+    return 1;
+  };
+
+  // Function to get row span for images
+  const getRowSpan = (index, total) => {
+    if (total === 3 && index === 0) return 2;
+    return 1;
+  };
+
   return (
     <Box
       sx={{
@@ -212,6 +235,36 @@ export default function Post({ post, onLike, onUnlike, onComment, onShare }) {
           </Box>
           <Box sx={{ py: 1 }}>
             <Typography>{post.content?.text || 'No content available'}</Typography>
+            
+            {/* Display images if they exist */}
+            {post.content?.medias && post.content.medias.length > 0 && (
+              <ImageList 
+                variant="quilted" 
+                cols={2}
+                rows={2}
+                gap={8}
+                sx={{ mt: 2, maxHeight: 300 }}
+              >
+                {post.content.medias.slice(0, 4).map((media, index) => (
+                  <ImageListItem 
+                    key={index}
+                    cols={getColSpan(index, post.content.medias.length)}
+                    rows={getRowSpan(index, post.content.medias.length)}
+                  >
+                    <img
+                      src={`http://localhost:8000${media}`}
+                      alt={`Post media ${index + 1}`}
+                      style={{ 
+                        width: '100%', 
+                        height: '100%', 
+                        objectFit: 'cover',
+                        borderRadius: 8
+                      }}
+                    />
+                  </ImageListItem>
+                ))}
+              </ImageList>
+            )}
           </Box>
           <Box sx={{ display: 'flex', alignItems: 'center', color: 'text.secondary' }}>
             <IconButton 

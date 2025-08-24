@@ -3,10 +3,12 @@ from datetime import datetime
 
 class PostContentSerializer(serializers.Serializer):
     text = serializers.CharField(max_length=280, required=True, allow_blank=False)
-    media = serializers.ListField(
-        child=serializers.URLField(), 
+    medias = serializers.ListField(
+        child=serializers.CharField(),
+        max_length=4, 
         required=False,
-        default=[]
+        default=[],
+        read_only=True
     )
     user_id = serializers.IntegerField(read_only=True)
 
@@ -25,6 +27,12 @@ class PostSerializer(serializers.Serializer):
         required=False,
         default=[]
     )
+
+    medias = serializers.ListField(
+        child=serializers.CharField(),
+        read_only=True
+    )
+
     like_count = serializers.IntegerField(read_only=True)
     created_at = serializers.DateTimeField(read_only=True)
     deleted = serializers.BooleanField(read_only=True)
@@ -34,7 +42,7 @@ class PostSerializer(serializers.Serializer):
 
 class PostCreateSerializer(serializers.Serializer):
     content = PostContentSerializer()
-    comments = serializers.ListField(
+    comments = serializers.ListField( 
         child=serializers.CharField(), 
         required=False,
         default=[]
@@ -45,3 +53,9 @@ class PostCreateSerializer(serializers.Serializer):
         default=[]
     )
     is_comment = serializers.BooleanField(default=False)
+    attachments = serializers.ListField(
+        child=serializers.FileField(max_length=4, allow_empty_file=False),
+        required=False,
+        write_only=True
+
+    )

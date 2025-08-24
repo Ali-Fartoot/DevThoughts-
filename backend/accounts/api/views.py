@@ -91,19 +91,6 @@ def update_profile_picture(request):
 
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
-def get_user_id(request):
-    username = request.query_params.get('username')
-    if not username:
-        return Response({"error": "Username parameter is required"},status=status.HTTP_400_BAD_REQUEST)
- 
-    try:
-        user = User.objects.get(username=username)
-        return Response({"user_id": user.id}, status=status.HTTP_200_OK)
-    except User.DoesNotExist:
-       return Response({"error": "User not found"}, status=status.HTTP_404_NOT_FOUND)
-
-@api_view(["GET"])
-@permission_classes([IsAuthenticated])
 def get_profile_picture(request):
     target_id = request.query_params.get('id', request.user.id)
 
@@ -130,3 +117,18 @@ def get_profile_picture(request):
         return HttpResponse(image_data, content_type='image/jpeg')
 
     return Response({"error": f"Failed to retrieve profile picture"}, status=status.HTTP_404_NOT_FOUND)
+
+
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def get_user_id(request):
+    username = request.query_params.get('username')
+    if not username:
+        return Response({"error": "Username parameter is required"},status=status.HTTP_400_BAD_REQUEST)
+ 
+    try:
+        user = User.objects.get(username=username)
+        return Response({"user_id": user.id}, status=status.HTTP_200_OK)
+    except User.DoesNotExist:
+       return Response({"error": "User not found"}, status=status.HTTP_404_NOT_FOUND)

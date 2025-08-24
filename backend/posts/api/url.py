@@ -9,4 +9,5 @@ urlpatterns = [
     path('posts/<str:post_id>/', views.post_detail, name='post-detail'),
     path('posts/<str:post_id>/like/', views.post_like, name='post-like'),
     path('posts/<str:post_id>/unlike/', views.post_unlike, name='post-unlike'),
+    path('attachments/<str:object_name>', views.serve_attachment, name='serve-attachment'),
 ]

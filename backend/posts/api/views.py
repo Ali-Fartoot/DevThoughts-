@@ -3,15 +3,19 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from django.http import Http404
 import logging
+import json
 from posts.models import PostDocument
 from .serializer import PostCreateSerializer, PostSerializer
 from rest_framework.permissions import IsAuthenticated
 from bson import ObjectId
 from django.contrib.auth.models import User
+from minio_api import MinioClient
+from posts.api.utils import hash_with_current_time
+from django.http import FileResponse
+import tempfile
+import os
 
 logger = logging.getLogger(__name__)
-
-
 
 @api_view(['GET', 'POST'])
 @permission_classes([IsAuthenticated])
@@ -28,34 +32,110 @@ def create_post(request):
     post_doc = PostDocument()
     
     try:
-        serializer = PostCreateSerializer(data=request.data)
+        # Parse JSON data from the uploaded files
+        content_data = {}
+        comments_data = []
+        likes_data = []
         
-        if serializer.is_valid():
-            post_data = serializer.validated_data
-            post_data.setdefault('comments', [])
-            post_data.setdefault('likes', [])
-            post_data['user_id'] = request.user.id
-
-            created_post = post_doc.create(post_data)
-            
-            response_serializer = PostSerializer(created_post)
-            return Response(
-                response_serializer.data, 
-                status=status.HTTP_201_CREATED
-            )
+        if 'content' in request.FILES:
+            content_file = request.FILES['content']
+            content_content = content_file.read()
+            if isinstance(content_content, bytes):
+                content_content = content_content.decode('utf-8')
+            content_data = json.loads(content_content)
         
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
+        if 'comments' in request.FILES:
+            comments_file = request.FILES['comments']
+            comments_content = comments_file.read()
+            if isinstance(comments_content, bytes):
+                comments_content = comments_content.decode('utf-8')
+            comments_data = json.loads(comments_content)
+        
+        if 'likes' in request.FILES:
+            likes_file = request.FILES['likes']
+            likes_content = likes_file.read()
+            if isinstance(likes_content, bytes):
+                likes_content = likes_content.decode('utf-8')
+            likes_data = json.loads(likes_content)
+        
+        post_data = {
+            'content': content_data,
+            'comments': comments_data,
+            'likes': likes_data,
+            'user_id': request.user.id
+        }
+        
+        media_urls = []
+        if "attachments" in request.FILES:
+            media_urls = attach_images(request)
+        
+        post_data['content']['medias'] = media_urls
+        created_post = post_doc.create(post_data)
+        
+        response_serializer = PostSerializer(created_post)
+        return Response(
+            response_serializer.data, 
+            status=status.HTTP_201_CREATED
+        )
+        
     except Exception as e:
         logger.error(f"Error creating post: {e}")
         return Response(
             {'error': 'Failed to create post'}, 
             status=status.HTTP_500_INTERNAL_SERVER_ERROR
         )
+    
+# bulk function
+def attach_images(request):
+    minio_client = MinioClient().get_client()
+    bucket_name = "attachment-pictures"
+    multiple_files = request.FILES.getlist('attachments')
+    media_urls = []
+    for file in multiple_files:
+        filename = file.name
+        object_name = f"{hash_with_current_time(filename)}_attach.jpg"
+        file_path = f"/dynamic/{object_name}"
+
+        with open(file_path, 'wb') as f:
+            for chunk in file.chunks():
+                f.write(chunk)
+        
+        if minio_client.put_object(bucket_name, object_name, file_path):
+            media_urls.append(f"/api/attachments/{object_name}")
+        
+    return media_urls
+    
+# bulk function
+def get_attachment(request, object_names: list):
+    minio_client = MinioClient().get_client()
+    bucket_name = "attachment-pictures"
+    attachments = []
+
+    with tempfile.TemporaryDirectory() as temp_dir:
+        for object_name in object_names:
+            temp_file_path = os.path.join(temp_dir, object_name)
+
+            try:
+                retived_object = minio_client.get_object(bucket_name, object_name, temp_file_path)
+                if retived_object:
+                    attachments.append({
+                        'name': object_name,
+                        'path': temp_file_path
+                    })
+
+            except:
+                continue
+    
+    return Response({
+        'retrived_files': len(attachments),
+        'total_requested': len(object_names)
+    }, status=status.HTTP_200_OK)
+
 
 def get_all_posts(request):
     post_doc = PostDocument()
     
+    all_object_names = []
     try:
         page = int(request.query_params.get('page', 1))
         page_size = int(request.query_params.get('page_size', 10))
@@ -66,8 +146,15 @@ def get_all_posts(request):
         serialized_posts = []
         for post in all_posts:
 
-            if post['is_comment']:
+            if post.get('is_comment', False):
                 continue
+
+            medias = post.get('content', {}).get('medias', [])
+            if medias:
+                for media_url in medias:
+                    if media_url.startswith('/api/attachments/'):
+                        object_name = media_url.replace('/api/attachments/', '')
+                        all_object_names.append(object_name)
 
             serializer = PostSerializer(post)
             post_data = serializer.data
@@ -76,6 +163,11 @@ def get_all_posts(request):
             post_data['is_liked'] = request.user.id in post_data.get('likes', [])
             serialized_posts.append(post_data)
             
+        # Handle attachment retrieval
+        if all_object_names:
+            all_object_names = list(dict.fromkeys(all_object_names))
+            attachment_response = get_attachment(request, all_object_names)
+
         total_posts = post_doc.collection.count_documents({'deleted': False})
         response_data = {
             'count': total_posts,
@@ -105,18 +197,31 @@ def get_posts_by_user(request):
         limit = page_size
         user_posts = post_doc.get_posts_by_user(request.user.id, skip, limit)
         
+        all_object_names = []
         serialized_posts = []
         for post in user_posts:
             
-            if post['is_comment']:
+            if post.get('is_comment', False):
                 continue
             
+            medias = post.get('content', {}).get('medias', [])
+            if medias:
+                for media_url in medias:
+                    if media_url.startswith('/api/attachments/'):
+                        object_name = media_url.replace('/api/attachments/', '')
+                        all_object_names.append(object_name)
+
             serializer = PostSerializer(post)
             post_data = serializer.data
             post_data['username'] = request.user.username
             post_data['is_liked'] = request.user.id in post_data.get('likes', [])
             serialized_posts.append(post_data)
             
+        # Handle attachment retrieval
+        if all_object_names:
+            all_object_names = list(dict.fromkeys(all_object_names))
+            attachment_response = get_attachment(request, all_object_names)
+
         total_posts = post_doc.collection.count_documents({'user_id': request.user.id, 'deleted': False})
         response_data = {
             'count': total_posts,
@@ -143,26 +248,54 @@ def add_comment(request, post_id):
     post_doc = PostDocument()
 
     try:
-        serializer = PostCreateSerializer(data=request.data)
-
-        if serializer.is_valid():
-            post_data = serializer.validated_data
-            post_data['is_comment'] = True
-            post_data['user_id'] = request.user.id
-            created_post = post_doc.create(post_data)
-            post_data_id = created_post.get('_id')
-            result = post_doc.add_comment(post_id, post_data_id)
-
-            if result:
-                response_serializer = PostSerializer(created_post)
-                return Response(
-                    response_serializer.data, 
-                    status=status.HTTP_201_CREATED
-                )
+        content_data = {}
+        comments_data = []
+        likes_data = []
         
-            else:
+        if 'content' in request.FILES:
+            content_file = request.FILES['content']
+            content_content = content_file.read()
+            if isinstance(content_content, bytes):
+                content_content = content_content.decode('utf-8')
+            content_data = json.loads(content_content)
         
-                return Response( {'error': 'Failed to link comment to the post'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR )
+        if 'comments' in request.FILES:
+            comments_file = request.FILES['comments']
+            comments_content = comments_file.read()
+            if isinstance(comments_content, bytes):
+                comments_content = comments_content.decode('utf-8')
+            comments_data = json.loads(comments_content)
+        
+        if 'likes' in request.FILES:
+            likes_file = request.FILES['likes']
+            likes_content = likes_file.read()
+            if isinstance(likes_content, bytes):
+                likes_content = likes_content.decode('utf-8')
+            likes_data = json.loads(likes_content)
+        
+        # Create the post_data dictionary
+        post_data = {
+            'content': content_data,
+            'comments': comments_data,
+            'likes': likes_data,
+            'is_comment': True,
+            'user_id': request.user.id
+        }
+        
+        created_post = post_doc.create(post_data)
+        post_data_id = created_post.get('_id')
+        result = post_doc.add_comment(post_id, post_data_id)
+
+        if result:
+            response_serializer = PostSerializer(created_post)
+            return Response(
+                response_serializer.data, 
+                status=status.HTTP_201_CREATED
+            )
+        
+        else:
+        
+            return Response( {'error': 'Failed to link comment to the post'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR )
             
     except Exception as e:
         return Response(
@@ -362,5 +495,36 @@ def get_comment_post(request, post_id):
         logger.error(f"Error fetching comments: {e}")
         return Response(
             {'error': 'Failed to fetch comments'}, 
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
+
+
+@api_view(['GET'])
+@permission_classes([])
+def serve_attachment(request, object_name):
+    """
+    Serve an attachment from MinIO storage
+    """
+    try:
+        minio_client = MinioClient().get_client()
+        bucket_name = "attachment-pictures"
+        temp_file_path = f"/tmp/{object_name}"
+        response = minio_client.get_object(bucket_name, object_name, temp_file_path)
+        
+        if response:
+            return FileResponse(
+                open(temp_file_path, 'rb'),
+                content_type='image/jpeg'
+            )
+        else:
+            return Response(
+                {'error': 'File not found'}, 
+                status=status.HTTP_404_NOT_FOUND
+            )
+            
+    except Exception as e:
+        logger.error(f"Error serving attachment {object_name}: {e}")
+        return Response(
+            {'error': 'Failed to serve attachment'}, 
             status=status.HTTP_500_INTERNAL_SERVER_ERROR
         )
