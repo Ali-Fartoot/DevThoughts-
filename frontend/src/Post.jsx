@@ -96,7 +96,10 @@ export default function Post({ post, onLike, onUnlike, onComment, onShare }) {
       return;
     }
     // Navigate to comments page
-    navigate(`/comments/${post._id}`);
+    const postId = post._id || post.id;
+    if (postId) {
+      navigate(`/comments/${postId}`);
+    }
   };
   
   const handleLikeClick = async (e) => {
@@ -108,9 +111,14 @@ export default function Post({ post, onLike, onUnlike, onComment, onShare }) {
         throw new Error("User not authenticated");
       }
 
+      const postId = post._id || post.id;
+      if (!postId) {
+        throw new Error("Post ID not found");
+      }
+
       if (post.is_liked) {
         // Unlike the post
-        const response = await fetch(`http://localhost:8000/api/posts/${post._id}/unlike/`, {
+        const response = await fetch(`http://localhost:8000/api/posts/${postId}/unlike/`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -119,13 +127,13 @@ export default function Post({ post, onLike, onUnlike, onComment, onShare }) {
         });
 
         if (response.ok) {
-          if (onUnlike) onUnlike(post._id);
+          if (onUnlike) onUnlike(postId);
         } else {
           throw new Error("Failed to unlike post");
         }
       } else {
         // Like the post
-        const response = await fetch(`http://localhost:8000/api/posts/${post._id}/like/`, {
+        const response = await fetch(`http://localhost:8000/api/posts/${postId}/like/`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -134,7 +142,7 @@ export default function Post({ post, onLike, onUnlike, onComment, onShare }) {
         });
 
         if (response.ok) {
-          if (onLike) onLike(post._id);
+          if (onLike) onLike(postId);
         } else {
           throw new Error("Failed to like post");
         }
@@ -157,7 +165,8 @@ export default function Post({ post, onLike, onUnlike, onComment, onShare }) {
   
   const handleCommentCreated = (newComment) => {
     // Optionally refresh the comments or update the UI
-    if (onComment) onComment(post._id);
+    const postId = post._id || post.id;
+    if (onComment && postId) onComment(postId);
   };
 
   // Function to determine image layout based on number of images
@@ -186,15 +195,10 @@ export default function Post({ post, onLike, onUnlike, onComment, onShare }) {
       sx={{
         p: 2,
         borderBottom: '1px solid #2f3336',
-        '&:hover': {
-          bgcolor: '#191919',
-          cursor: 'pointer',
-        },
         textAlign: 'left',
       }}
-      onClick={handlePostClick}
     >
-      <Box sx={{ display: 'flex' }}>
+      <Box sx={{ display: 'flex' }} onClick={handlePostClick}>
         <Box
           sx={{
             width: 48,
@@ -207,6 +211,9 @@ export default function Post({ post, onLike, onUnlike, onComment, onShare }) {
             mr: 2,
             flexShrink: 0,
             overflow: 'hidden',
+            '&:hover': {
+              cursor: 'pointer',
+            },
           }}
         >
           {profilePicture ? (
@@ -221,7 +228,7 @@ export default function Post({ post, onLike, onUnlike, onComment, onShare }) {
             </Typography>
           )}
         </Box>
-        <Box sx={{ flex: 1 }}>
+        <Box sx={{ flex: 1, '&:hover': { cursor: 'pointer' } }}>
           <Box sx={{ display: 'flex', alignItems: 'center' }}>
             <Typography fontWeight="bold">
               {post.username || `User ${post.user_id}`}
@@ -292,7 +299,7 @@ export default function Post({ post, onLike, onUnlike, onComment, onShare }) {
               sx={{ color: 'inherit', ml: 2 }}
               onClick={(e) => {
                 e.stopPropagation(); // Prevent triggering the post click handler
-                if (onShare) onShare(post._id);
+                if (onShare) onShare(post._id || post.id);
               }}
             >
               <ShareIcon fontSize="small" />
@@ -305,7 +312,7 @@ export default function Post({ post, onLike, onUnlike, onComment, onShare }) {
         open={openCreateComment} 
         onClose={handleCloseCreateComment} 
         onCommentCreated={handleCommentCreated} 
-        post_id={post._id}
+        post_id={post._id || post.id}
       />
     </Box>
   );

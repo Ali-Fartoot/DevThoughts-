@@ -1,8 +1,56 @@
+# Dependencies
 node_modules
 package-lock.json
-.git
-.gitignore
-README.md
+yarn.lock
+
+# Testing
 .nyc_output
 coverage
 .cache
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+
+# IDE and editor files
+.vscode
+.idea
+*.swp
+*.swo
+*~
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Git
+.git
+.gitignore
+
+# Documentation
+README.md
+
+# Build outputs
+dist
+dist-ssr
+
+# Local files
+.env
+.env.local
+.env.production
+.env.production.local
+
+# Temporary files
+*.tmp
+*.temp
+
+# Backup files
+*.bak
+*.backup

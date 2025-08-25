@@ -1,17 +1,34 @@
 from pymongo import MongoClient as PyMongoClient
 import os
 import logging
-from django.conf import settings
 
 logger = logging.getLogger(__name__)
 
-MONGODB_SETTINGS = getattr(settings, 'MONGODB_SETTINGS', {
-    'host': os.getenv('MONGO_HOST', 'localhost'),
-    'port': int(os.getenv('MONGO_PORT', 27017)),
-    'db': os.getenv('MONGO_DB', 'devthoughts_db'),
-    'username': os.getenv('MONGO_INITDB_ROOT_USERNAME'),
-    'password': os.getenv('MONGO_INITDB_ROOT_PASSWORD')
-})
+try:
+    from django.conf import settings
+    MONGODB_SETTINGS = getattr(settings, 'MONGODB_SETTINGS', {
+        'host': os.getenv('MONGO_HOST', 'localhost'),
+        'port': int(os.getenv('MONGO_PORT', 27017)),
+        'db': os.getenv('MONGO_DB', 'devthoughts_db'),
+        'username': os.getenv('MONGO_INITDB_ROOT_USERNAME'),
+        'password': os.getenv('MONGO_INITDB_ROOT_PASSWORD')
+    })
+except ImportError:
+    MONGODB_SETTINGS = {
+        'host': os.getenv('MONGO_HOST', 'localhost'),
+        'port': int(os.getenv('MONGO_PORT', 27017)),
+        'db': os.getenv('MONGO_DB', 'devthoughts_db'),
+        'username': os.getenv('MONGO_INITDB_ROOT_USERNAME'),
+        'password': os.getenv('MONGO_INITDB_ROOT_PASSWORD')
+    }
+except Exception:
+    MONGODB_SETTINGS = {
+        'host': os.getenv('MONGO_HOST', 'localhost'),
+        'port': int(os.getenv('MONGO_PORT', 27017)),
+        'db': os.getenv('MONGO_DB', 'devthoughts_db'),
+        'username': os.getenv('MONGO_INITDB_ROOT_USERNAME'),
+        'password': os.getenv('MONGO_INITDB_ROOT_PASSWORD')
+    }
 
 class MongoDB:
     _instance = None

@@ -1,9 +1,12 @@
+# Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
 *$py.class
 
+# C extensions
 *.so
 
+# Distribution / packaging
 .Python
 build/
 develop-eggs/
@@ -21,7 +24,6 @@ wheels/
 .installed.cfg
 *.egg
 MANIFEST
-
 
 *.manifest
 *.spec
@@ -41,6 +43,7 @@ coverage.xml
 *.py,cover
 .hypothesis/
 .pytest_cache/
+
 *.mo
 *.pot
 
@@ -67,6 +70,7 @@ ipython_config.py
 .python-version
 
 
+
 __pypackages__/
 
 celerybeat-schedule
@@ -90,15 +94,12 @@ backend/.venv
 
 /site
 
-# mypy
 .mypy_cache/
 .dmypy.json
 dmypy.json
 
-# Pyre type checker
 .pyre/
 
-# OS generated files
 .DS_Store
 .DS_Store?
 ._*
@@ -107,7 +108,6 @@ dmypy.json
 ehthumbs.db
 Thumbs.db
 
-# IDE files
 .vscode/
 .idea/
 *.swp
@@ -119,19 +119,20 @@ Thumbs.db
 
 docker-compose.override.yml
 
-node_modules/
+.git
+.gitignore
 
-# Frontend build artifacts
-frontend/dist/
-frontend/node_modules/
+README.md
+
+frontend/
+
+node_modules/
 
 # Logs
 *.log
 
-# Temp files
 *.tmp
 *.temp
 
-# Backup files
 *.bak
 *.backup

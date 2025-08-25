@@ -8,6 +8,4 @@ urlpatterns = [
     path('accounts/profile/put/', views.update_profile_picture, name='update-profile-picture'),
     path('accounts/profile/', views.get_profile_picture, name='get-profile-picture'),
     path('user/<str:username>/', views.UserPanelView.as_view(), name='get_profile'),
-
-
 ]

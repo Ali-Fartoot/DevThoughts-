@@ -4,20 +4,21 @@ from typing import Optional, Dict, Any, List
 import json
 from posts.base import BaseDocument
 
+
 class PostDocument(BaseDocument):
     def __init__(self):
         super().__init__('posts')
-    
+
     def create(self, data: Dict[str, Any]) -> Dict[str, Any]:
         """Create a new post document"""
-        data['created_at'] = datetime.utcnow()
         data['deleted'] = False
         data['like_count'] = len(data.get('likes', []))
+        data['created_at'] = datetime.utcnow()
         
         result = self.collection.insert_one(data)
         created_doc = self.collection.find_one({'_id': result.inserted_id})
         return self.to_dict(created_doc)
-    
+
     def get_by_id(self, post_id: str) -> Optional[Dict[str, Any]]:
         try:
             doc = self.collection.find_one({'_id': ObjectId(post_id)})
@@ -49,7 +50,6 @@ class PostDocument(BaseDocument):
         except Exception:
             return False
     
-    
     def add_like(self, post_id: str, user_id: int) -> bool:
         try:
             result = self.collection.update_one(
@@ -64,7 +64,7 @@ class PostDocument(BaseDocument):
             return result.modified_count > 0
         except Exception:
             return False
-    
+
     def remove_like(self, post_id: str, user_id: int) -> bool:
         try:
             result = self.collection.update_one(

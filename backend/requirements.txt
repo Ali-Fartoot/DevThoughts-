@@ -8,6 +8,8 @@ django_extensions
 
 minio
 
+elasticsearch==8.11.0
+
 pymongo
 
 python-dotenv
