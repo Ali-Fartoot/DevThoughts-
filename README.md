@@ -310,12 +310,4 @@ docker-compose exec backend python manage.py createsuperuser
 
 API endpoints can be explored through the Django REST Framework browsable API at http://localhost:8000/api/
 
-## Deployment
 
-For production deployment, you should:
-
-1. Change default passwords in `backend.env`
-2. Enable SSL/TLS for all services
-3. Configure proper CORS settings
-4. Set up proper backup strategies for databases
-5. Monitor resource usage and scale services accordingly
